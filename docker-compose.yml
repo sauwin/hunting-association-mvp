@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME:-hunting_db}
+      - POSTGRES_USER=${DB_USER:-hunting_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-secret_password}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hunting_user} -d ${DB_NAME:-hunting_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: hunting-web
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./src:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
