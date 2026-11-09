@@ -29,3 +29,13 @@
   - Verified every field against Section 2 ("In scope — MUST deliver") and Section 6 ("Coordination with Student B") to ensure strict data minimisation and reuse of `accounts.User`.
   - Confirmed that `check_eligibility` returns the exact fields required by Section 5 Acceptance Criteria (`active`, `licenceValid`, `insuranceValid`, `validUntil`).
   - Separated `FeeRule` and `FeeQuote` with frozen monetary snapshots (`on_delete=models.PROTECT`) so changing fee rules affects new quotes without rewriting historical quotes.
+
+  ## Entry 4 — Server-Side RBAC Permissions, Role Mixins & Access Control Tests
+- **Date:** 2026-11-09
+- **Task / Issue:** Implement server-side role-based access control utilities (`permissions.py`), `User` role helper properties, and automated access control tests (Student A scope, Issue #9).
+- **Prompt Summary:** Asked AI to generate role helper properties on `accounts.User`, function decorators (`role_required`), class-based view mixins (`SecretariatRequiredMixin`, `MemberRequiredMixin`, `EditorRequiredMixin`), and unit tests verifying HTTP 403 responses for unauthorised roles.
+- **AI Output:** Provided implementation for `src/accounts/models.py`, `src/accounts/permissions.py`, and `RequestFactory`-based unit tests in `src/accounts/tests.py`.
+- **Verification & Human Changes:**
+  - Verified that unauthenticated users are redirected to the login page (`HTTP 302`) while authenticated users lacking required roles raise `PermissionDenied` (`HTTP 403`).
+  - Confirmed that `member` accounts are strictly blocked from `secretariat` and `editor` views, satisfying Section 5 Acceptance Criteria.
+  - Executed `docker compose exec web python manage.py test accounts` and verified all 5 unit tests pass.
