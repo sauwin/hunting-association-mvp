@@ -30,6 +30,7 @@
   - Confirmed that `check_eligibility` returns the exact fields required by Section 5 Acceptance Criteria (`active`, `licenceValid`, `insuranceValid`, `validUntil`).
   - Separated `FeeRule` and `FeeQuote` with frozen monetary snapshots (`on_delete=models.PROTECT`) so changing fee rules affects new quotes without rewriting historical quotes.
 
+
 ## Entry 4 — Public Site Core Pages, FAQ Module, and Slovak Localization
 - **Date:** 2026-11-10
 - **Task / Issue:** Implementation of homepage, core public pages (`about`, `how_to_join`, `faq`), `FAQ` model/admin, and unit tests (`public_site` app, Student B scope, Issue #8).
@@ -40,3 +41,12 @@
   - Researched *Deutscher Jagdverband* to structure and add custom domain content: association statistics (*Fakty a čísla*), hunting ethics (*Waidgerechtigkeit*), 4 specialized commissions, membership categories, and document checklists.
   - Fixed a `NoReverseMatch` URL tag issue in the footer (`{% url 'public_site:about' %}`) and corrected a typo in the navigation bar (`Ako vstúpiť`).
   - Populated the database with Slovak FAQ records and ran the unit test suite in Docker (`Ran 3 tests in 0.102s — OK`).
+  ## Entry 4 — Server-Side RBAC Permissions, Role Mixins & Access Control Tests
+- **Date:** 2026-11-09
+- **Task / Issue:** Implement server-side role-based access control utilities (`permissions.py`), `User` role helper properties, and automated access control tests (Student A scope, Issue #9).
+- **Prompt Summary:** Asked AI to generate role helper properties on `accounts.User`, function decorators (`role_required`), class-based view mixins (`SecretariatRequiredMixin`, `MemberRequiredMixin`, `EditorRequiredMixin`), and unit tests verifying HTTP 403 responses for unauthorised roles.
+- **AI Output:** Provided implementation for `src/accounts/models.py`, `src/accounts/permissions.py`, and `RequestFactory`-based unit tests in `src/accounts/tests.py`.
+- **Verification & Human Changes:**
+  - Verified that unauthenticated users are redirected to the login page (`HTTP 302`) while authenticated users lacking required roles raise `PermissionDenied` (`HTTP 403`).
+  - Confirmed that `member` accounts are strictly blocked from `secretariat` and `editor` views, satisfying Section 5 Acceptance Criteria.
+  - Executed `docker compose exec web python manage.py test accounts` and verified all 5 unit tests pass.
