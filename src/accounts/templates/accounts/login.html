@@ -1,0 +1,40 @@
+{% extends "accounts/base_auth.html" %}
+
+{% block title %}Sign In | Hunting Association{% endblock %}
+
+{% block auth_content %}
+  <h1>Sign In</h1>
+  <p class="auth-subtitle">Enter your email address or username to access your member portal.</p>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="auth-alert" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="auth-alert auth-alert--error" role="alert">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    {% for field in form %}
+      <div class="auth-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="auth-error">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="auth-btn">Sign In</button>
+  </form>
+
+  <div class="auth-links">
+    <p><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a></p>
+    <p>Don't have an account yet? <a href="{% url 'accounts:register' %}">Register here</a></p>
+  </div>
+{% endblock %}
