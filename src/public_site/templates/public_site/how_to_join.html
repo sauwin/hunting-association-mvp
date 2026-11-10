@@ -1,0 +1,122 @@
+{% extends "public_site/base.html" %}
+
+{% block title %}Ako vstúpiť | Slovenská poľovnícka komora{% endblock %}
+
+{% block content %}
+<section class="bg-forest-800 text-white py-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-3">Ako sa stať členom</h1>
+        <p class="text-stone-300 text-lg">Prehľadný sprievodca procesom prijatia, kategóriami členstva a potrebnými dokladmi.</p>
+    </div>
+</section>
+
+<section class="py-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <!-- 3 Steps Process -->
+    <div>
+        <h2 class="text-2xl font-bold text-forest-900 mb-6">Postup registrácie v 3 krokoch</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                <span class="inline-block bg-forest-700 text-white text-xs font-bold px-2.5 py-1 rounded mb-3">Krok 1</span>
+                <h3 class="text-xl font-bold text-forest-900 mb-2">Výber kategórie a doklady</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Zvoľte si príslušnú kategóriu členstva a pripravte si potrebné doklady (poľovný lístok alebo potvrdenie o zaradení do kurzu).
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                <span class="inline-block bg-forest-700 text-white text-xs font-bold px-2.5 py-1 rounded mb-3">Krok 2</span>
+                <h3 class="text-xl font-bold text-forest-900 mb-2">Vyplnenie online prihlášky</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Vyplňte náš online registračný formulár, uveďte svoje kontaktné údaje a odošlite žiadosť na spracovanie okresnej zložke.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                <span class="inline-block bg-forest-700 text-white text-xs font-bold px-2.5 py-1 rounded mb-3">Krok 3</span>
+                <h3 class="text-xl font-bold text-forest-900 mb-2">Overenie a aktivácia</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Po overení údajov správnou radou a úhrade členského príspevku získate plnohodnotné členstvo vrátane poľovníckeho poistenia.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Membership Categories -->
+    <div>
+        <h2 class="text-2xl font-bold text-forest-900 mb-2">Prehľad kategórií členstva</h2>
+        <p class="text-stone-600 text-sm mb-6">Členstvo je otvorené nielen pre držiteľov poľovných lístkov, ale aj pre uchádzačov v príprave a mladých ochrancov prírody.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-forest-700 border-x border-b border-stone-200">
+                <h3 class="text-lg font-bold text-forest-900 mb-1">Riadny člen</h3>
+                <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-3">Držiteľ poľovného lístka</p>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Plnohodnotné členstvo pre aktívnych poľovníkov zahŕňajúce zákonné poistenie, hlasovacie právo v komore a prístup ku všetkým odborným akciám.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-amber-600 border-x border-b border-stone-200">
+                <h3 class="text-lg font-bold text-forest-900 mb-1">Čakateľ na poľovný lístok</h3>
+                <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-3">Kandidát v prípravnom kurze</p>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Určené pre uchádzačov absolvujúcich teoretickú a praktickú prípravu v revíri pred zložením poľovníckych skúšok.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-forest-600 border-x border-b border-stone-200">
+                <h3 class="text-lg font-bold text-forest-900 mb-1">Mládežnícky sympatizant</h3>
+                <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-3">Študenti a krúžky mladých</p>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Pre mladých záujemcov o prírodu, lesnú pedagogiku a kynológiu, ktorí sa chcú zapájať do brigád a ochranárskych aktivít.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Required Documents Checklist -->
+    <div class="bg-forest-50 p-6 sm:p-8 rounded-lg border border-forest-100">
+        <h2 class="text-xl font-bold text-forest-900 mb-4">Zoznam potrebných dokladov k registrácii</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-stone-700">
+            <div class="bg-white p-4 rounded border border-stone-200 flex items-start gap-3">
+                <span class="text-forest-700 font-bold text-base">&check;</span>
+                <div>
+                    <strong class="text-forest-900 block">Občiansky preukaz</strong>
+                    Platný doklad totožnosti na overenie osobných údajov a trvalého pobytu.
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded border border-stone-200 flex items-start gap-3">
+                <span class="text-forest-700 font-bold text-base">&check;</span>
+                <div>
+                    <strong class="text-forest-900 block">Poľovný lístok / Osvedčenie o skúške</strong>
+                    Pre riadnych členov číslo platného poľovného lístka alebo vysvedčenie o poľovníckej skúške.
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded border border-stone-200 flex items-start gap-3">
+                <span class="text-forest-700 font-bold text-base">&check;</span>
+                <div>
+                    <strong class="text-forest-900 block">Zbrojný preukaz skupiny D (voliteľné)</strong>
+                    Vyžaduje sa pri plnom výkone práva poľovníctva so strelnou poľovnou zbraňou.
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded border border-stone-200 flex items-start gap-3">
+                <span class="text-forest-700 font-bold text-base">&check;</span>
+                <div>
+                    <strong class="text-forest-900 block">Potvrdenie o poistení / členskom</strong>
+                    Zabezpečuje sa automaticky pri schválení registrácie a úhrade členského poplatku.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Registration Handoff CTA -->
+    <div class="bg-white p-8 rounded-lg shadow-sm border-2 border-forest-600 text-center">
+        <h2 class="text-2xl font-bold text-forest-900 mb-2">Pripravení podať prihlášku?</h2>
+        <p class="text-stone-600 max-w-xl mx-auto mb-6">
+            Prejdite priamo do nášho online portálu, vytvorte si účet a odošlite žiadosť o členstvo na pár kliknutí.
+        </p>
+        <a href="{{ membership_register_url }}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3.5 rounded-md font-bold text-lg transition shadow-md">
+            Prejsť na registráciu člena &rarr;
+        </a>
+    </div>
+</section>
+{% endblock %}

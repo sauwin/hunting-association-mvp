@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="sk" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Poľovnícka Asociacja Slovenska{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            50: '#f2f7f4',
+                            100: '#e1ede6',
+                            600: '#2d6a4f',
+                            700: '#1b4332',
+                            800: '#132a13',
+                            900: '#081c15',
+                        },
+                        amber: {
+                            600: '#d97706',
+                            700: '#b45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-stone-50 text-stone-800 flex flex-col min-h-screen font-sans">
+
+    <!-- Header Navigation -->
+    <header class="bg-forest-800 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-18 py-3">
+                <!-- Professional Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="{% url 'public_site:home' %}" class="flex items-center gap-3 text-white group">
+                        <div class="w-10 h-10 rounded-full bg-forest-700 border border-forest-600 flex items-center justify-center shadow-inner group-hover:bg-forest-600 transition">
+                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-base font-bold tracking-tight leading-tight">Poľovnícka Komora</span>
+                            <span class="text-xs text-stone-300 tracking-wider uppercase">Slovenská republika</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-6 items-center">
+                    <a href="{% url 'public_site:home' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Domov</a>
+                    <a href="{% url 'public_site:about' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">O nás</a>
+                    <a href="{% url 'public_site:how_to_join' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Ako vstúpiť</a>
+                    <a href="{% url 'public_site:faq' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">FAQ</a>
+                    <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md font-semibold text-sm transition shadow-sm">
+                        Stať sa členom
+                    </a>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" type="button" class="text-stone-200 hover:text-white focus:outline-none p-2" aria-label="Toggle menu">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-forest-900 px-4 pt-2 pb-4 space-y-2 border-t border-forest-700">
+            <a href="{% url 'public_site:home' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Domov</a>
+            <a href="{% url 'public_site:about' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">O nás</a>
+            <a href="{% url 'public_site:how_to_join' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Ako vstúпити</a>
+            <a href="{% url 'public_site:faq' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">FAQ</a>
+            <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="block w-full text-center mt-3 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-md font-semibold transition">
+                Stať sa členom
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-forest-900 text-stone-300 py-10 mt-12 border-t border-forest-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h3 class="text-white text-base font-bold mb-3 flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Slovenská poľovnícka komora
+                </h3>
+                <p class="text-sm text-stone-400 leading-relaxed">
+                    Ochrana prírody, udržateľný výkon poľovníctva, starostlivosť o zver a podpora poľovníckej komunity na Slovensku.
+                </p>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Rýchle odkazy</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="{% url 'public_site:home' %}" class="hover:text-white transition">Domov</a></li>
+                    <li><a href="{% url 'public_site:about' %}" class="hover:text-white transition">O asociácii</a></li>
+                    <li><a href="{% url 'public_site:how_to_join' %}" class="hover:text-white transition">Ako sa stať členom</a></li>
+                    <li><a href="{% url 'public_site:faq' %}" class="hover:text-white transition">Často kladené otázky</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Členstvo</h4>
+                <p class="text-sm text-stone-400 mb-4">
+                    Chcete sa stať súčasťou našej komunity? Podajte si prihlášku online.
+                </p>
+                <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="inline-block bg-forest-600 hover:bg-forest-700 text-white text-sm px-4 py-2 rounded font-medium transition">
+                    Registrácia online &rarr;
+                </a>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-forest-800 text-xs text-stone-500 text-center">
+            &copy; 2026 Poľovnícka Asociacja Slovenska. Všetky práva vyhradené.
+        </div>
+    </footer>
+
+    <script>
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        if (btn && menu) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
