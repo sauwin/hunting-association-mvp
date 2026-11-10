@@ -1,0 +1,167 @@
+{% extends "public_site/base.html" %}
+
+{% block title %}Domov | Slovenská poľovnícka komora{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-forest-800 text-white py-16 md:py-24 border-b border-forest-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left">
+        <div class="max-w-3xl">
+            <span class="inline-block bg-forest-700 text-forest-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-4 border border-forest-600">
+                Ochrana prírody &bull; Tradícia &bull; Komunita
+            </span>
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-6 leading-tight">
+                Zachovanie prírody a zodpovedný výkon poľovníctva
+            </h1>
+            <p class="text-lg sm:text-xl text-stone-200 mb-8 leading-relaxed">
+                Sme celoštátna organizácia zameraná na trvalo udržateľný manažment zveri, ochranu biotopov a vzdelávanie poľovníckej verejnosti na Slovensku.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                <a href="{{ membership_register_url }}" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3.5 rounded-md font-bold text-center transition shadow-md">
+                    Podať prihlášku za člena
+                </a>
+                <a href="{% url 'public_site:how_to_join' %}" class="bg-forest-700 hover:bg-forest-600 text-white border border-forest-600 px-6 py-3.5 rounded-md font-semibold text-center transition">
+                    Ako sa stať členom &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Facts & Figures Section (Fakty a čísla) -->
+<section class="bg-forest-900 text-white py-10 border-b border-forest-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            <div class="p-4 rounded-lg bg-forest-800/60 border border-forest-700">
+                <div class="text-3xl font-extrabold text-amber-500 mb-1">65 000+</div>
+                <div class="text-sm text-stone-300 font-medium">aktívnych poľovníkov na Slovensku</div>
+            </div>
+            <div class="p-4 rounded-lg bg-forest-800/60 border border-forest-700">
+                <div class="text-3xl font-extrabold text-amber-500 mb-1">1 800+</div>
+                <div class="text-sm text-stone-300 font-medium">uznaných poľovných revírov</div>
+            </div>
+            <div class="p-4 rounded-lg bg-forest-800/60 border border-forest-700">
+                <div class="text-3xl font-extrabold text-amber-500 mb-1">80 %</div>
+                <div class="text-sm text-stone-300 font-medium">územia SR pod aktívnym monitoringom zveri</div>
+            </div>
+            <div class="p-4 rounded-lg bg-forest-800/60 border border-forest-700">
+                <div class="text-3xl font-extrabold text-amber-500 mb-1">3 500+</div>
+                <div class="text-sm text-stone-300 font-medium">hodín pri záchrane srnčiat pred kosením lúk</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Pillars of Activity (Kľúčové piliere činnosti) -->
+<section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-bold text-forest-900 mb-3">Kľúčové piliere našej činnosti</h2>
+        <p class="text-stone-600">Moderné poľovníctvo na Slovensku zahŕňa celoročnú systematickú prácu v revíroch, ochranu genofondu a bezpečnosť v krajine.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Pillar 1 -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 flex flex-col">
+            <div class="w-12 h-12 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center mb-4 border border-forest-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-forest-900 mb-2">Starostlivosť o zver a prikrmovanie</h3>
+            <p class="text-stone-600 text-sm leading-relaxed flex-grow">
+                Zabezpečujeme prikrmovanie zveri v čase núdze počas zimných mesiacov, budovanie soľníkov, napájadiel a zakladanie políok pre zver na zmiernenie škôd na poľnohospodárskych plodinách.
+            </p>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 flex flex-col">
+            <div class="w-12 h-12 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center mb-4 border border-forest-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-forest-900 mb-2">Poľovnícka kynológia</h3>
+            <p class="text-stone-600 text-sm leading-relaxed flex-grow">
+                Podporujeme chov, výcvik a skúšky poľovne upotrebiteľných psov. Kvalifikovaný poľovný pes je nevyhnutným pomocníkom pri dohľadávaní zveri a dodržiavaní poľovníckej etiky.
+            </p>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 flex flex-col">
+            <div class="w-12 h-12 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center mb-4 border border-forest-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-forest-900 mb-2">Prevencia škôd a stretov so zverou</h3>
+            <p class="text-stone-600 text-sm leading-relaxed flex-grow">
+                Inštalujeme pachové a optické ohradníky pozdĺž rizikových úsekov ciest na zníženie dopravných nehôd so zverou a realizujeme jarné vyhľadávanie srnčiat pred kosením lúk pomocou dronov s termovíziou.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Member Benefits Section -->
+<section class="py-12 bg-stone-100 border-t border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-stone-200 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+            <div class="lg:col-span-2">
+                <h2 class="text-2xl font-bold text-forest-900 mb-3">Čo získate členstvom v komore?</h2>
+                <p class="text-stone-600 text-sm sm:text-base mb-4 leading-relaxed">
+                    Okrem možnosti podieľať sa na aktívnej ochrane slovenskej prírody získava každý člen komplexné poistenie zodpovednosti za škodu pri výkone práva poľovníctva, prístup k odborným seminárom a právne zastupovanie.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-forest-800 font-medium">
+                    <div class="flex items-center gap-2">&check; Zákonné poľovnícke poistenie</div>
+                    <div class="flex items-center gap-2">&check; Odborné strelecké a kynologické kurzy</div>
+                    <div class="flex items-center gap-2">&check; Právne a legislatívne poradenstvo</div>
+                    <div class="flex items-center gap-2">&check; Prístup do členskej evidencie</div>
+                </div>
+            </div>
+            <div class="text-center lg:text-right">
+                <a href="{% url 'public_site:how_to_join' %}" class="inline-block bg-forest-700 hover:bg-forest-800 text-white px-6 py-3 rounded-md font-semibold text-sm transition shadow-sm">
+                    Zobraziť podmienky prijatia &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured FAQs Section -->
+{% if featured_faqs %}
+<section class="py-12 bg-forest-50 border-t border-b border-stone-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-forest-900">Často kladené otázky</h2>
+                <p class="text-stone-600 text-sm">Rýchle odpovede na najčastejšie otázky ohľadom členstva.</p>
+            </div>
+            <a href="{% url 'public_site:faq' %}" class="text-forest-700 hover:text-forest-900 font-semibold text-sm">
+                Zobraziť všetky FAQ &rarr;
+            </a>
+        </div>
+
+        <div class="space-y-4">
+            {% for item in featured_faqs %}
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-stone-200">
+                <h3 class="font-bold text-forest-900 mb-1">{{ item.question }}</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">{{ item.answer }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Call to Action Banner -->
+<section class="py-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <div class="bg-forest-800 text-white rounded-xl p-8 sm:p-12 shadow-md">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-4">Staňte sa členom našej poľovníckej komunity</h2>
+        <p class="text-stone-300 max-w-xl mx-auto mb-6">
+            Vyplňte online prihlášku za pár minút a pridajte sa k našej ochranárskej organizácii.
+        </p>
+        <a href="{{ membership_register_url }}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3.5 rounded-md font-bold transition shadow">
+            Začať registráciu člena
+        </a>
+    </div>
+</section>
+{% endblock %}

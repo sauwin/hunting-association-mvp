@@ -1,0 +1,104 @@
+{% extends "public_site/base.html" %}
+
+{% block title %}O nás | Slovenská poľovnícka komora{% endblock %}
+
+{% block content %}
+<section class="bg-forest-800 text-white py-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-3">O našej organizácii</h1>
+        <p class="text-stone-300 text-lg">Naša misia, poľovnícka etika a odborné komisie pre udržateľnú ochranu prírody.</p>
+    </div>
+</section>
+
+<section class="py-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <!-- Vision & Mission -->
+    <div class="bg-white p-6 sm:p-8 rounded-lg shadow-sm border border-stone-200">
+        <h2 class="text-2xl font-bold text-forest-900 mb-4">Naša vízia a poslanie</h2>
+        <p class="text-stone-700 leading-relaxed mb-4">
+            Slovenská poľovnícka komora združuje ľudí so spoločnou vášňou pre prírodu, les a zver. Naším hlavným cieľom je udržiavať ekologickú rovnováhu v slovenských revíroch, chrániť pôvodné druhy voľne žijúcej zveri a dohliadať na odborný a bezpečný výkon práva poľovníctva.
+        </p>
+        <p class="text-stone-700 leading-relaxed">
+            Poľovníctvo chápeme ako aplikovanú ochranu prírody v praxi – od obnovy remízok a mokradí až po celoročný zdravotný monitoring populácií zveri.
+        </p>
+    </div>
+
+    <!-- Waidgerechtigkeit / Hunting Ethics Principle -->
+    <div class="bg-forest-900 text-white p-6 sm:p-8 rounded-lg shadow-sm border border-forest-700">
+        <span class="inline-block bg-amber-600 text-white text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wider mb-3">
+            Etický kódex
+        </span>
+        <h2 class="text-2xl font-bold mb-3">Princíp poľovníckej etiky a cti</h2>
+        <p class="text-stone-300 text-sm sm:text-base leading-relaxed mb-4">
+            V roku 2026 poľovníctvo dávno neznamená len lov. Jeho základom je prísna <strong>chovateľská selekcia, ochrana ohrozených druhov a regulácia rovnováhy v kultúrnej krajine</strong>. Zásada poľovníckej etiky zaväzuje každého člena správať sa k zveri s úctou ako k živému tvorovi, zabraňovať zbytočnému utrpeniu a uprednostňovať záujmy ochrany prírody pred osobným úlovkom.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-forest-700 text-sm">
+            <div>
+                <span class="font-bold text-amber-500 block">Úcta k živej prírode</span>
+                <span class="text-stone-400">Zodpovedný prístup k zveri a jej prirodzenému prostrediu.</span>
+            </div>
+            <div>
+                <span class="font-bold text-amber-500 block">Vedecká selekcia</span>
+                <span class="text-stone-400">Udržiavanie zdravej vekovej a pohlavnej štruktúry populácií.</span>
+            </div>
+            <div>
+                <span class="font-bold text-amber-500 block">Maximálna bezpečnosť</span>
+                <span class="text-stone-400">Prísne dodržiavanie bezpečnostných pravidiel pri manipulácii so zbraňou.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Specialized Commissions (Odborné komisie) -->
+    <div>
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-forest-900 mb-2">Odborné komisie komory</h2>
+            <p class="text-stone-600 text-sm">Činnosť komory zabezpečujú špecializované odborné sekcie zložené z skúsených kynológov, lesníkov, právnikov a inštruktorov.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                <h3 class="text-lg font-bold text-forest-900 mb-2">1. Kynologická komisia</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Riadi poľovnícku kynológiu, organizuje skúšky poľovnej upotrebiteľnosti psov (farbiarov, stavačov, duričov a brlohárov) a vedie evidenciu kvalifikovaných rozhodcov.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                <h3 class="text-lg font-bold text-forest-900 mb-2">2. Strelecká komisia</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Zabezpečuje praktický strelecký výcvik uchádzačov o poľovný lístok, kontrolné streľby členov a organizáciu regionálnych aj celoštátnych streleckých súťaží.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                <h3 class="text-lg font-bold text-forest-900 mb-2">3. Osvetová a ekologická komisia</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Vedie lesnú pedagogiku pre školy, vzdeláva verejnosť o ochrane prírody, koordinuje záchranu mláďat pred kosením a uchováva slovenskú poľovnícku kultúru a trubačstvo.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                <h3 class="text-lg font-bold text-forest-900 mb-2">4. Legislatívna a disciplinárna komisia</h3>
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    Poskytuje právne stanoviská k zákonu o poľovníctve, metodicky usmerňuje užívateľov poľovných revírov a dohliada na dodržiavanie poľovníckej disciplíny.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="bg-forest-50 p-6 sm:p-8 rounded-lg border border-forest-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+            <h3 class="text-lg font-bold text-forest-900">Chcete sa stať súčasťou našej organizácie?</h3>
+            <p class="text-stone-600 text-sm">Zistite, aké sú kategórie členstva a zoznam potrebných dokladov.</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'public_site:how_to_join' %}" class="bg-white hover:bg-stone-100 text-forest-800 border border-stone-300 px-4 py-2.5 rounded-md font-semibold text-sm transition">
+                Ako vstúpiť
+            </a>
+            <a href="{{ membership_register_url }}" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-md font-semibold text-sm transition">
+                Podať prihlášku
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
