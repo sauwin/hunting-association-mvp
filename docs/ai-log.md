@@ -29,3 +29,14 @@
   - Verified every field against Section 2 ("In scope — MUST deliver") and Section 6 ("Coordination with Student B") to ensure strict data minimisation and reuse of `accounts.User`.
   - Confirmed that `check_eligibility` returns the exact fields required by Section 5 Acceptance Criteria (`active`, `licenceValid`, `insuranceValid`, `validUntil`).
   - Separated `FeeRule` and `FeeQuote` with frozen monetary snapshots (`on_delete=models.PROTECT`) so changing fee rules affects new quotes without rewriting historical quotes.
+
+## Entry 4 — Public Site Core Pages, FAQ Module, and Slovak Localization
+- **Date:** 2026-11-10
+- **Task / Issue:** Implementation of homepage, core public pages (`about`, `how_to_join`, `faq`), `FAQ` model/admin, and unit tests (`public_site` app, Student B scope, Issue #8).
+- **Prompt Summary:** Asked AI to assist with responsive Tailwind CSS layout snippets for the public templates, Slovak translation phrasing for hunting terminology, and boilerplate structure for the FAQ view tests.
+- **AI Output:** Suggested HTML/Tailwind grid structures for the 5 templates, SVG icon options, Slovak text drafts, and basic `TestCase` examples.
+- **Verification & Human Changes:**
+  - Implemented the `FAQ` model, admin configuration, URL routing, and view logic (`MEMBERSHIP_REGISTER_URL` handoff to `/membership/apply/`), verifying compliance with Student A's integration contract.
+  - Researched *Deutscher Jagdverband* to structure and add custom domain content: association statistics (*Fakty a čísla*), hunting ethics (*Waidgerechtigkeit*), 4 specialized commissions, membership categories, and document checklists.
+  - Fixed a `NoReverseMatch` URL tag issue in the footer (`{% url 'public_site:about' %}`) and corrected a typo in the navigation bar (`Ako vstúpiť`).
+  - Populated the database with Slovak FAQ records and ran the unit test suite in Docker (`Ran 3 tests in 0.102s — OK`).

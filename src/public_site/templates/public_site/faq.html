@@ -1,0 +1,40 @@
+{% extends "public_site/base.html" %}
+
+{% block title %}FAQ | Slovenská poľovnícka komora{% endblock %}
+
+{% block content %}
+<section class="bg-forest-800 text-white py-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-3">Často kladené otázky</h1>
+        <p class="text-stone-300 text-lg">Všetko, čo potrebujete vedieť o členstve, pravidlách a aktivitách komory.</p>
+    </div>
+</section>
+
+<section class="py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    {% if faqs %}
+        <div class="space-y-4">
+            {% for faq in faqs %}
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                    <h2 class="text-lg font-bold text-forest-900 mb-2">{{ faq.question }}</h2>
+                    <div class="text-stone-700 text-sm sm:text-base leading-relaxed">
+                        {{ faq.answer|linebreaks }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white p-8 rounded-lg shadow-sm border border-stone-200 text-center">
+            <p class="text-stone-600 mb-2 font-medium">Zatiaľ neboli zverejnené žiadne časté otázky.</p>
+            <p class="text-stone-500 text-sm">Navštívte sekciu Ako vstúpiť alebo sa informujte neskôr.</p>
+        </div>
+    {% endif %}
+
+    <div class="mt-10 bg-forest-50 p-6 rounded-lg border border-forest-100 text-center">
+        <h3 class="font-bold text-forest-900 mb-2">Chcete sa stať členom?</h3>
+        <p class="text-stone-600 text-sm mb-4">Podajte si žiadosť o členstvo online ešte dnes.</p>
+        <a href="{{ membership_register_url }}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-md font-semibold text-sm transition">
+            Podať prihlášku
+        </a>
+    </div>
+</section>
+{% endblock %}
