@@ -1,0 +1,31 @@
+{% extends "accounts/base_auth.html" %}
+
+{% block title %}Account Dashboard | Hunting Association{% endblock %}
+{% block wrapper_class %}auth-wrapper--wide{% endblock %}
+
+{% block auth_content %}
+  <h1>Welcome, {{ user.first_name|default:user.username }}</h1>
+  <p class="auth-subtitle">Member Portal & Account Overview</p>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="auth-alert" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <p><strong>Username:</strong> {{ user.username }}</p>
+  <p><strong>Email:</strong> {{ user.email }}</p>
+  <p><strong>Role:</strong> {{ user.get_role_display }}</p>
+
+  {% if user.can_manage_members %}
+    <div class="auth-alert" style="margin-top: 1.25rem;">
+      <strong>Secretariat Back Office</strong><br>
+      You have staff permissions to review membership applications and manage records.
+    </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'accounts:logout' %}" style="margin-top: 1.5rem;">
+    {% csrf_token %}
+    <button type="submit" class="auth-btn auth-btn--secondary">Sign Out</button>
+  </form>
+{% endblock %}

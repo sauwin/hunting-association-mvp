@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
+from django.urls import reverse
 from django.views import View
 
 from .permissions import (
@@ -121,3 +123,71 @@ class RoleAndPermissionTests(TestCase):
         request_member_area.user = self.member_user
         response_member = DummyMemberCBV.as_view()(request_member_area)
         self.assertEqual(response_member.status_code, 200)
+
+
+class AuthenticationFlowTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user(
+            username="hunter_login",
+            email="hunter_login@example.test",
+            password="ValidPassword123!",
+            first_name="Jan",
+            last_name="Novak",
+        )
+
+    def test_registration_creates_member_role_and_logs_in(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            {
+                "username": "new_applicant",
+                "email": "applicant@example.test",
+                "first_name": "Peter",
+                "last_name": "Kovac",
+                "password1": "ComplexPass123!",
+                "password2": "ComplexPass123!",
+            },
+        )
+        self.assertRedirects(response, reverse("accounts:dashboard"))
+        created_user = User.objects.get(username="new_applicant")
+        self.assertEqual(created_user.role, User.Role.MEMBER)
+        self.assertEqual(created_user.email, "applicant@example.test")
+
+    def test_login_with_email_and_username(self):
+        response_email = self.client.post(
+            reverse("accounts:login"),
+            {"identifier": "HUNTER_LOGIN@example.test", "password": "ValidPassword123!"},
+        )
+        self.assertRedirects(response_email, reverse("accounts:dashboard"))
+        self.client.post(reverse("accounts:logout"))
+
+        response_username = self.client.post(
+            reverse("accounts:login"),
+            {"identifier": "hunter_login", "password": "ValidPassword123!"},
+        )
+        self.assertRedirects(response_username, reverse("accounts:dashboard"))
+
+    @override_settings(LOGIN_RATE_LIMIT_ATTEMPTS=3, LOGIN_RATE_LIMIT_TIMEOUT=300)
+    def test_login_rate_limiting_blocks_brute_force(self):
+        login_url = reverse("accounts:login")
+        bad_payload = {"identifier": "hunter_login", "password": "WrongPassword!"}
+
+        for _ in range(3):
+            res = self.client.post(login_url, bad_payload)
+            self.assertEqual(res.status_code, 200)
+
+        blocked_res = self.client.post(login_url, bad_payload)
+        self.assertEqual(blocked_res.status_code, 429)
+        self.assertContains(blocked_res, "Too many failed login attempts", status_code=429)
+
+    def test_dashboard_requires_authentication(self):
+        response = self.client.get(reverse("accounts:dashboard"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_password_reset_request_succeeds(self):
+        response = self.client.post(
+            reverse("accounts:password_reset"),
+            {"email": "hunter_login@example.test"},
+        )
+        self.assertRedirects(response, reverse("accounts:password_reset_done"))
