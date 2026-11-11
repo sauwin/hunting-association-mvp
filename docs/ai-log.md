@@ -50,3 +50,13 @@
   - Verified that unauthenticated users are redirected to the login page (`HTTP 302`) while authenticated users lacking required roles raise `PermissionDenied` (`HTTP 403`).
   - Confirmed that `member` accounts are strictly blocked from `secretariat` and `editor` views, satisfying Section 5 Acceptance Criteria.
   - Executed `docker compose exec web python manage.py test accounts` and verified all 5 unit tests pass.
+
+## Entry 5 — Authentication Flow, Rate-Limited Login & ADR-0005
+- **Date:** 2026-11-11
+- **Task / Issue:** Implement registration, email/username login with brute-force rate limiting, logout, password reset flow, templates, unit tests, and ADR-0005 (Student A scope, Issue #10).
+- **Prompt Summary:** Asked AI to create `RegistrationForm` and `EmailOrUsernameLoginForm`, implement rate-limited login and auth views, wire URLs and styled templates extending `public_site/base.html`, and write integration tests.
+- **AI Output:** Generated `forms.py`, `views.py`, `urls.py`, templates in `src/accounts/templates/accounts/`, `AuthenticationFlowTests` in `src/accounts/tests.py`, and `docs/adr/0005-authentication-and-rbac-security.md`.
+- **Verification & Human Changes:**
+  - Verified login, registration, and styled form layout in browser at `http://localhost:8000/accounts/login/`.
+  - Caught an `AttributeError` (`cleaned_data` missing on unvalidated form when `form.add_error` was called during HTTP 429 lockout) via `test_login_rate_limiting_blocks_brute_force` and fixed it by initializing `form.cleaned_data = {}` in `login_view` without hitting the database.
+  - Re-ran `docker compose exec web python manage.py test accounts` and confirmed all 10 unit/integration tests pass.

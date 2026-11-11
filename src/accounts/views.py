@@ -53,6 +53,7 @@ def login_view(request):
 
         if attempts >= max_attempts:
             form = EmailOrUsernameLoginForm(request=request)
+            form.cleaned_data = {}
             form.add_error(
                 None,
                 "Too many failed login attempts. Please wait a few minutes and try again.",
