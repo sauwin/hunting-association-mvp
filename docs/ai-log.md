@@ -60,3 +60,13 @@
   - Verified login, registration, and styled form layout in browser at `http://localhost:8000/accounts/login/`.
   - Caught an `AttributeError` (`cleaned_data` missing on unvalidated form when `form.add_error` was called during HTTP 429 lockout) via `test_login_rate_limiting_blocks_brute_force` and fixed it by initializing `form.cleaned_data = {}` in `login_view` without hitting the database.
   - Re-ran `docker compose exec web python manage.py test accounts` and confirmed all 10 unit/integration tests pass.
+
+  ## Entry 6 — Membership Domain Models, Fee Calculator & Frozen Quotes
+- **Date:** 2026-11-13
+- **Task / Issue:** Implement `membership` models, database-configured placeholder fee rules, frozen quote calculation service, demo seed command, and unit tests (Student A scope, Issue #11).
+- **Prompt Summary:** Asked AI to design PostgreSQL models for member profiles, status history, versioned fee rules, frozen quotes, consents, and payments, implement the fee calculator service and `seed_membership_demo` command, and explain Django ORM syntax alongside unit tests.
+- **AI Output:** Generated `src/membership/models.py`, `src/membership/admin.py`, `src/membership/services.py`, `seed_membership_demo.py`, and `MembershipModelsAndFeeCalculatorTests` in `src/membership/tests.py`.
+- **Verification & Human Changes:**
+  - Applied `0001_initial` migration and verified `python manage.py seed_membership_demo` in Docker container.
+  - Reviewed ORM model fields, `TextChoices` enums, and foreign key protection rules (`on_delete=models.PROTECT` for `FeeQuote.fee_rule`).
+  - Ran `docker compose exec web python manage.py test membership` and verified all 4 unit tests pass, confirming that updating a `FeeRule` does not alter previously stored `FeeQuote` records.
