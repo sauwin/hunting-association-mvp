@@ -70,3 +70,12 @@
   - Applied `0001_initial` migration and verified `python manage.py seed_membership_demo` in Docker container.
   - Reviewed ORM model fields, `TextChoices` enums, and foreign key protection rules (`on_delete=models.PROTECT` for `FeeQuote.fee_rule`).
   - Ran `docker compose exec web python manage.py test membership` and verified all 4 unit tests pass, confirming that updating a `FeeRule` does not alter previously stored `FeeQuote` records.
+
+  ## Entry 7 — Membership Application Form, Fee Preview, Consent Capture & GDPR Export
+- **Date:** 2026-11-16
+- **Task / Issue:** Implement web forms, controller views, HTML templates, and integration tests for membership application, fee calculator preview, versioned consent capture, and personal data JSON export (Student A scope, Issue #12).
+- **Prompt Summary:** Asked AI to create `FeeCalculatorPreviewForm` and `MembershipApplicationForm` in `forms.py`, implement `views.py` and `urls.py` with atomic transaction handling, build templates under `src/membership/templates/membership/`, troubleshoot `TemplateDoesNotExist` after container restart, and write integration tests.
+- **AI Output:** Generated `src/membership/forms.py`, `src/membership/views.py`, `src/membership/urls.py`, 4 HTML templates, and `MembershipApplicationAndExportViewsTests` in `src/membership/tests.py`.
+- **Verification & Human Changes:**
+  - Restarted Docker `web` service so Django template loader detected the new `src/membership/templates/` directory and manually tested `/membership/calculator/`, `/membership/apply/`, and `/membership/my-application/` in the browser.
+  - Ran `docker compose exec web python manage.py test membership` and verified all 8 tests pass (covering licence validation, explicit consent requirement, frozen quote snapshot creation, and JSON data export).
