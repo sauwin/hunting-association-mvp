@@ -1,0 +1,62 @@
+{% extends "membership/base_membership.html" %}
+
+{% block title %}Membership Fee Calculator — Hunting Association{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Indicative Membership Fee Calculator</h1>
+  <p>
+    Active tariff schedule: <strong>{{ active_rule.name }}</strong>
+    (Version: <strong>{{ active_rule.version }}</strong>)
+  </p>
+
+  <form method="get" action="{% url 'membership:fee_calculator' %}">
+    {% for field in form %}
+      <div class="form-row">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}{{ field.errors }}{% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn">Calculate Fee Breakdown</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Calculated Breakdown</h2>
+  <p class="badge-sample">{{ breakdown.placeholder_label }}</p>
+
+  <table>
+    <tbody>
+      <tr>
+        <th>Tariff Rule Version</th>
+        <td>{{ breakdown.rule_version }}</td>
+      </tr>
+      <tr>
+        <th>Membership Category</th>
+        <td>{{ breakdown.member_type }}</td>
+      </tr>
+      <tr>
+        <th>Base Annual Fee</th>
+        <td>{{ breakdown.base_amount }} {{ breakdown.currency }}</td>
+      </tr>
+      <tr>
+        <th>Insurance Add-On</th>
+        <td>+ {{ breakdown.insurance_amount }} {{ breakdown.currency }}</td>
+      </tr>
+      <tr>
+        <th>Reduced-Rate Discount</th>
+        <td>- {{ breakdown.discount_amount }} {{ breakdown.currency }}</td>
+      </tr>
+      <tr>
+        <th>Total Indicative Amount</th>
+        <td><strong>{{ breakdown.total_amount }} {{ breakdown.currency }}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top: 1.25rem;">
+    <a class="btn" href="{% url 'membership:apply' %}">Proceed to Membership Application</a>
+  </p>
+</div>
+{% endblock %}

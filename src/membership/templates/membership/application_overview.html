@@ -1,0 +1,122 @@
+{% extends "membership/base_membership.html" %}
+
+{% block title %}My Membership Overview — Hunting Association{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>My Membership Status & Personal Data</h1>
+
+  {% if profile %}
+    <table>
+      <tbody>
+        <tr>
+          <th>Applicant / Member Name</th>
+          <td>{{ request.user.first_name }} {{ request.user.last_name }} ({{ request.user.username }})</td>
+        </tr>
+        <tr>
+          <th>Lifecycle Status</th>
+          <td><strong>{{ profile.get_status_display }}</strong> (<code>{{ profile.status }}</code>)</td>
+        </tr>
+        <tr>
+          <th>Member Number</th>
+          <td>{{ profile.member_number|default:"Pending secretariat approval" }}</td>
+        </tr>
+        <tr>
+          <th>Category</th>
+          <td>{{ profile.get_member_type_display }}</td>
+        </tr>
+        <tr>
+          <th>Contact & Address</th>
+          <td>{{ profile.phone }} — {{ profile.street_address }}, {{ profile.postal_code }} {{ profile.city }}</td>
+        </tr>
+        <tr>
+          <th>Hunting Licence</th>
+          <td>
+            {{ profile.hunting_licence_number|default:"Not provided" }}
+            {% if profile.licence_valid_until %}(valid until {{ profile.licence_valid_until }}){% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Insurance Valid Until</th>
+          <td>{{ profile.insurance_valid_until|default:"Not provided" }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top: 1rem;">
+      <a href="{% url 'membership:apply' %}" class="btn">Update Application / Generate New Quote</a>
+      <a href="{% url 'membership:export_my_data' %}" class="btn btn-secondary">Download My Data (JSON)</a>
+    </p>
+  {% else %}
+    <p>You have not submitted a membership application yet.</p>
+    <p>
+      <a href="{% url 'membership:apply' %}" class="btn">Submit Membership Application</a>
+      <a href="{% url 'membership:export_my_data' %}" class="btn btn-secondary">Download My Data (JSON)</a>
+    </p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Frozen Fee Quotes (Immutable Snapshots)</h2>
+  {% if quotes %}
+    <table>
+      <thead>
+        <tr>
+          <th>Quote #</th>
+          <th>Rule Version</th>
+          <th>Category</th>
+          <th>Base</th>
+          <th>Insurance</th>
+          <th>Discount</th>
+          <th>Total</th>
+          <th>Notice</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in quotes %}
+          <tr>
+            <td>#{{ q.id }}</td>
+            <td><code>{{ q.rule_version_snapshot }}</code></td>
+            <td>{{ q.member_type_snapshot }}</td>
+            <td>{{ q.base_amount }} {{ q.currency }}</td>
+            <td>{{ q.insurance_amount }} {{ q.currency }}</td>
+            <td>-{{ q.discount_amount }} {{ q.currency }}</td>
+            <td><strong>{{ q.total_amount }} {{ q.currency }}</strong></td>
+            <td><small>{{ q.placeholder_label }}</small></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No fee quotes generated yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recorded Consents</h2>
+  {% if consents %}
+    <table>
+      <thead>
+        <tr>
+          <th>Version</th>
+          <th>Purpose</th>
+          <th>Accepted At</th>
+          <th>Snapshot Text</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in consents %}
+          <tr>
+            <td><code>{{ c.consent_version }}</code></td>
+            <td>{{ c.get_purpose_display }}</td>
+            <td>{{ c.accepted_at }}</td>
+            <td><small>{{ c.consent_text_snapshot }}</small></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No consent records found.</p>
+  {% endif %}
+</div>
+{% endblock %}

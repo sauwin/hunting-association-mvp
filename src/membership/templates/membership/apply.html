@@ -1,0 +1,39 @@
+{% extends "membership/base_membership.html" %}
+
+{% block title %}Apply for Membership — Hunting Association{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Membership Application & Frozen Quote Generation</h1>
+  <p>
+    Submitting this form saves your member profile, records your versioned GDPR consent
+    (<strong>{{ consent_version }}</strong>), and generates an immutable fee quote snapshot
+    using tariff version <strong>{{ active_rule.version }}</strong>.
+  </p>
+  <p class="badge-sample">{{ preview_breakdown.placeholder_label }}</p>
+
+  <form method="post" action="{% url 'membership:apply' %}" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="errorlist">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% for field in form %}
+      <div class="form-row">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}
+          <div class="help-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+          {{ field.errors }}
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="btn">Submit Application & Freeze Fee Quote</button>
+    <a href="{% url 'membership:fee_calculator' %}" class="btn btn-secondary">Preview Calculator</a>
+  </form>
+</div>
+{% endblock %}
