@@ -37,6 +37,7 @@
       <a href="{% url 'membership:apply' %}">Apply for Membership</a>
       <a href="{% url 'membership:application_overview' %}">My Membership & Quotes</a>
       {% if user.is_authenticated %}
+        <a href="{% url 'membership:my_card' %}">Digital Member Card</a>
         <a href="{% url 'membership:export_my_data' %}">Export My Data (JSON)</a>
         <span>({{ user.username }})</span>
       {% else %}
