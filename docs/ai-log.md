@@ -70,3 +70,17 @@
   - Applied `0001_initial` migration and verified `python manage.py seed_membership_demo` in Docker container.
   - Reviewed ORM model fields, `TextChoices` enums, and foreign key protection rules (`on_delete=models.PROTECT` for `FeeQuote.fee_rule`).
   - Ran `docker compose exec web python manage.py test membership` and verified all 4 unit tests pass, confirming that updating a `FeeRule` does not alter previously stored `FeeQuote` records.
+
+
+
+  ## Entry 7 — Articles & News Module
+- **Date:** 2026-11-14
+- **Context:** Implementing Block 3 (`Category` and `Article` models, public listing with category filtering and pagination, detail view with server-side draft preview protection, and Slovak seed data).
+- **Key Prompts & AI Assistance:**
+  - Consulted on the optimal database schema structure and field choices for `Category` and `Article` to ensure strict alignment with the project's ER diagram and Student B boundaries.
+  - Used AI assistance to draft boilerplate code for Django Admin bulk actions, pagination logic, and Tailwind CSS responsive card layouts (`article_list.html`, `article_detail.html`).
+- **Verification, Human Decisions & Independent Work:**
+  - Independently designed and structured the database migration workflow, resolved container execution environments, and managed Git branching strategy (`feat/17-articles-and-news`).
+  - Personally verified and fine-tuned server-side role-based access control (RBAC) in `article_detail_view` to guarantee that anonymous visitors receive a secure HTTP 404 on drafts, while authorised staff/editors can safely preview them via a distinct warning banner.
+  - Hand-crafted realistic Slovak seed data and tailored category descriptions reflecting the authentic domain terminology of the Slovak Hunting Association (Slovenská poľovnícka komora).
+  - Wrote, executed, and successfully passed all unit tests (`Ran 8 tests - OK`) covering article visibility, draft security, and category filtering.
