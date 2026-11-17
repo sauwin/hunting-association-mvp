@@ -85,7 +85,7 @@
   - Hand-crafted realistic Slovak seed data and tailored category descriptions reflecting the authentic domain terminology of the Slovak Hunting Association (Slovenská poľovnícka komora).
   - Wrote, executed, and successfully passed all unit tests (`Ran 8 tests - OK`) covering article visibility, draft security, and category filtering.
 
-  ## Entry 7 — Membership Application Form, Fee Preview, Consent Capture & GDPR Export
+  ## Entry 8 — Membership Application Form, Fee Preview, Consent Capture & GDPR Export
 - **Date:** 2026-11-16
 - **Task / Issue:** Implement web forms, controller views, HTML templates, and integration tests for membership application, fee calculator preview, versioned consent capture, and personal data JSON export (Student A scope, Issue #12).
 - **Prompt Summary:** Asked AI to create `FeeCalculatorPreviewForm` and `MembershipApplicationForm` in `forms.py`, implement `views.py` and `urls.py` with atomic transaction handling, build templates under `src/membership/templates/membership/`, troubleshoot `TemplateDoesNotExist` after container restart, and write integration tests.
@@ -94,3 +94,11 @@
   - Restarted Docker `web` service so Django template loader detected the new `src/membership/templates/` directory and manually tested `/membership/calculator/`, `/membership/apply/`, and `/membership/my-application/` in the browser.
   - Ran `docker compose exec web python manage.py test membership` and verified all 8 tests pass (covering licence validation, explicit consent requirement, frozen quote snapshot creation, and JSON data export).
 
+## Entry 9 — Membership Lifecycle Service, Digital Member Card & GDPR Deletion Procedure
+- **Date:** 2026-11-17
+- **Task / Issue:** Implement membership lifecycle transition service (`applicant`, `active`, `expired`, `suspended`), automatic member ID generator, printable/downloadable HTML digital member card with strictly MVP fields, GDPR deletion procedure notice, and access-control tests (Student A scope, Issue #13).
+- **Prompt Summary:** Asked AI to implement `transition_member_status` and `generate_member_number` in `services.py`, create `member_card_view` with owner/secretariat authorization checks and `?download=1` support, build `member_card.html` with print CSS, and write unit/security tests.
+- **AI Output:** Updated `src/membership/services.py`, `src/membership/views.py`, `src/membership/urls.py`, `src/membership/templates/membership/`, and added `MembershipLifecycleAndCardTests` in `src/membership/tests.py`.
+- **Verification & Human Changes:**
+  - Verified `/membership/my-card/` and `/membership/my-application/` in the browser, confirming print styles and HTML download header.
+  - Ran `docker compose exec web python manage.py test membership` and confirmed all 11 tests pass, including verification that the digital card excludes private fields (phone, address, licence number) and blocks cross-member access with HTTP 403.

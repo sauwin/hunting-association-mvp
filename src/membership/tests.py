@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from decimal import Decimal
 from io import StringIO
 
@@ -19,6 +20,7 @@ from .services import (
     DEFAULT_CONSENT_VERSION,
     calculate_fee_breakdown,
     create_frozen_fee_quote,
+    transition_member_status,
 )
 
 User = get_user_model()
@@ -258,3 +260,121 @@ class MembershipApplicationAndExportViewsTests(TestCase):
         self.assertEqual(len(payload["fee_quotes"]), 1)
         self.assertEqual(payload["fee_quotes"][0]["total_amount"], "20.00")
         self.assertEqual(len(payload["consents"]), 1)
+
+
+class MembershipLifecycleAndCardTests(TestCase):
+    def setUp(self):
+        self.member_user = User.objects.create_user(
+            username="card_member",
+            email="card_member@example.test",
+            password="StrongPassword123!",
+            first_name="Peter",
+            last_name="Kovac",
+            role=User.Role.MEMBER,
+        )
+        self.other_user = User.objects.create_user(
+            username="other_member",
+            email="other_member@example.test",
+            password="StrongPassword123!",
+            first_name="Marek",
+            last_name="Horvath",
+            role=User.Role.MEMBER,
+        )
+        self.secretariat_user = User.objects.create_user(
+            username="secretariat_staff",
+            email="secretariat@example.test",
+            password="StrongPassword123!",
+            role=User.Role.SECRETARIAT,
+        )
+        self.profile = MemberProfile.objects.create(
+            user=self.member_user,
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900555666",
+            street_address="Lesna 99",
+            city="Nitra",
+            postal_code="94901",
+            hunting_licence_number="SK-SECRET-777",
+        )
+        self.other_profile = MemberProfile.objects.create(
+            user=self.other_user,
+            member_type=MemberProfile.MemberType.NON_HUNTER,
+            phone="+421900777888",
+            street_address="Dubova 4",
+            city="Trnava",
+            postal_code="91701",
+        )
+
+    def test_transition_member_status_generates_member_number_and_logs_history(self):
+        self.assertEqual(self.profile.status, MemberProfile.Status.APPLICANT)
+        self.assertIsNone(self.profile.member_number)
+
+        expiry = date(2027, 12, 31)
+        transition_member_status(
+            member=self.profile,
+            new_status=MemberProfile.Status.ACTIVE,
+            changed_by=self.secretariat_user,
+            valid_until=expiry,
+            note="Approved after fee payment verification.",
+        )
+
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.status, MemberProfile.Status.ACTIVE)
+        self.assertTrue(self.profile.member_number.startswith("HA-"))
+        self.assertEqual(self.profile.valid_until, expiry)
+
+        transition_member_status(
+            member=self.profile,
+            new_status=MemberProfile.Status.SUSPENDED,
+            changed_by=self.secretariat_user,
+            note="Temporary administrative hold.",
+        )
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.status, MemberProfile.Status.SUSPENDED)
+        self.assertEqual(self.profile.status_history.count(), 2)
+
+    def test_member_card_displays_only_mvp_fields_and_supports_download(self):
+        transition_member_status(
+            member=self.profile,
+            new_status=MemberProfile.Status.ACTIVE,
+            changed_by=self.secretariat_user,
+            valid_until=date(2027, 12, 31),
+        )
+        self.client.force_login(self.member_user)
+
+        response = self.client.get(reverse("membership:my_card"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.profile.member_number)
+        self.assertContains(response, "Peter Kovac")
+        self.assertContains(response, "Active")
+        self.assertContains(response, "2027-12-31")
+
+        # Private fields must NOT appear on the digital member card
+        self.assertNotContains(response, "+421900555666")
+        self.assertNotContains(response, "Lesna 99")
+        self.assertNotContains(response, "SK-SECRET-777")
+
+        download_response = self.client.get(
+            f"{reverse('membership:my_card')}?download=1"
+        )
+        self.assertEqual(download_response.status_code, 200)
+        self.assertIn("attachment;", download_response["Content-Disposition"])
+
+    def test_member_cannot_access_another_members_card_but_secretariat_can(self):
+        self.client.force_login(self.member_user)
+        forbidden_response = self.client.get(
+            reverse(
+                "membership:member_card_detail",
+                kwargs={"member_id": self.other_profile.pk},
+            )
+        )
+        self.assertEqual(forbidden_response.status_code, 403)
+
+        self.client.force_login(self.secretariat_user)
+        allowed_response = self.client.get(
+            reverse(
+                "membership:member_card_detail",
+                kwargs={"member_id": self.other_profile.pk},
+            )
+        )
+        self.assertEqual(allowed_response.status_code, 200)
+        self.assertContains(allowed_response, "Marek Horvath")
