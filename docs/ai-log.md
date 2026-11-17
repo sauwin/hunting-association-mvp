@@ -102,3 +102,15 @@
 - **Verification & Human Changes:**
   - Verified `/membership/my-card/` and `/membership/my-application/` in the browser, confirming print styles and HTML download header.
   - Ran `docker compose exec web python manage.py test membership` and confirmed all 11 tests pass, including verification that the digital card excludes private fields (phone, address, licence number) and blocks cross-member access with HTTP 403.
+
+
+## Entry 10 — Regional Representative Directory & Volunteer Recruitment Form
+- **Date:** 2026-11-17
+- **Task / Issue:** Implement Block 4 (`Representative` and `VolunteerEnquiry` models, Django Admin status workflow, public regional directory with region filter, private volunteer recruitment form with consent and honeypot spam protection, synthetic seed command, and unit tests) (`public_site` app, Student B scope, Issue #23).
+- **Prompt Summary:** Consulted AI on field structure for regional representative records, honeypot anti-spam field patterns in Django forms, and initial unit test scaffolding.
+- **AI Output:** Provided reference snippets for `VolunteerEnquiryForm` honeypot validation, Tailwind card layout examples, and baseline test cases.
+- **Verification & Human Changes:**
+  - Independently structured the `Representative` and `VolunteerEnquiry` models in `src/public_site/models.py`, generated and applied migration `0003_representative_volunteerenquiry`, and managed the `feat/23-regional-representatives` Git branch workflow with atomic commits.
+  - Configured Django Admin (`src/public_site/admin.py`) with custom bulk actions, inline status editing (`NEW`, `CONTACTED`, `ACCEPTED`, `DECLINED`), and read-only field protection for submitted enquiries.
+  - Adapted and styled the Slovak templates (`representatives.html`, `volunteer.html`) and updated global navigation links in `base.html` to match the existing association design system.
+  - Created the synthetic Slovak seed command (`seed_representatives.py`), verified region filtering and private enquiry handling in the browser and admin panel inside Docker Compose, and verified all 13 unit tests pass via `python manage.py test public_site`.
