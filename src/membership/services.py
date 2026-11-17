@@ -1,7 +1,11 @@
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from .models import FeeQuote, FeeRule, MemberProfile
+from django.db import transaction
+from django.utils import timezone
+
+from .models import FeeQuote, FeeRule, MemberProfile, MembershipStatusHistory
 
 DEFAULT_CONSENT_VERSION = "2026-v1-demo"
 DEFAULT_CONSENT_TEXT = (
@@ -11,6 +15,14 @@ DEFAULT_CONSENT_TEXT = (
 )
 PLACEHOLDER_QUOTE_LABEL = (
     "SAMPLE / PLACEHOLDER FEE QUOTE — Subject to association approval"
+)
+DELETION_REQUEST_PROCEDURE_TEXT = (
+    "Personal data deletion requests in this MVP are handled manually by the "
+    "association secretariat. When a member requests erasure, authorised staff "
+    "verify whether statutory or accounting retention rules apply, set the "
+    "membership record to inactive, and anonymise or delete personal profile "
+    "fields and consent records. (SAMPLE / PLACEHOLDER PROCEDURE — Not legal "
+    "compliance wording; requires client/legal review before production)."
 )
 
 
@@ -103,3 +115,57 @@ def create_frozen_fee_quote(
         currency=breakdown["currency"],
         placeholder_label=breakdown["placeholder_label"],
     )
+
+
+def generate_member_number(member: MemberProfile) -> str:
+    """Generate a unique synthetic member ID (e.g. HA-2026-0001) for an approved member."""
+    if member.member_number:
+        return member.member_number
+
+    year = timezone.localdate().year
+    candidate = f"HA-{year}-{member.pk:04d}"
+    if not MemberProfile.objects.filter(member_number=candidate).exclude(pk=member.pk).exists():
+        return candidate
+
+    return f"HA-{year}-{member.pk:04d}-{timezone.now().strftime('%H%M%S')}"
+
+
+def transition_member_status(
+    member: MemberProfile,
+    new_status: str,
+    changed_by=None,
+    valid_from: date | None = None,
+    valid_until: date | None = None,
+    note: str = "",
+) -> MemberProfile:
+    """Transition a member between lifecycle statuses and record an audit trail entry."""
+    valid_statuses = {choice[0] for choice in MemberProfile.Status.choices}
+    if new_status not in valid_statuses:
+        raise ValueError(f"Invalid membership status: {new_status}")
+
+    with transaction.atomic():
+        previous_status = member.status
+        member.status = new_status
+
+        if valid_from is not None:
+            member.valid_from = valid_from
+        elif new_status == MemberProfile.Status.ACTIVE and member.valid_from is None:
+            member.valid_from = timezone.localdate()
+
+        if valid_until is not None:
+            member.valid_until = valid_until
+
+        if new_status == MemberProfile.Status.ACTIVE and not member.member_number:
+            member.member_number = generate_member_number(member)
+
+        member.save()
+
+        MembershipStatusHistory.objects.create(
+            member=member,
+            previous_status=previous_status,
+            new_status=new_status,
+            changed_by=changed_by,
+            note=note or f"Status transitioned from {previous_status} to {new_status}.",
+        )
+
+    return member

@@ -22,6 +22,13 @@
           <td>{{ profile.member_number|default:"Pending secretariat approval" }}</td>
         </tr>
         <tr>
+          <th>Membership Validity</th>
+          <td>
+            From: {{ profile.valid_from|date:"Y-m-d"|default:"—" }} |
+            Until: {{ profile.valid_until|date:"Y-m-d"|default:"—" }}
+          </td>
+        </tr>
+        <tr>
           <th>Category</th>
           <td>{{ profile.get_member_type_display }}</td>
         </tr>
@@ -33,17 +40,18 @@
           <th>Hunting Licence</th>
           <td>
             {{ profile.hunting_licence_number|default:"Not provided" }}
-            {% if profile.licence_valid_until %}(valid until {{ profile.licence_valid_until }}){% endif %}
+            {% if profile.licence_valid_until %}(valid until {{ profile.licence_valid_until|date:"Y-m-d" }}){% endif %}
           </td>
         </tr>
         <tr>
           <th>Insurance Valid Until</th>
-          <td>{{ profile.insurance_valid_until|default:"Not provided" }}</td>
+          <td>{{ profile.insurance_valid_until|date:"Y-m-d"|default:"Not provided" }}</td>
         </tr>
       </tbody>
     </table>
 
-    <p style="margin-top: 1rem;">
+    <p style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'membership:my_card' %}" class="btn">View / Print Digital Member Card</a>
       <a href="{% url 'membership:apply' %}" class="btn">Update Application / Generate New Quote</a>
       <a href="{% url 'membership:export_my_data' %}" class="btn btn-secondary">Download My Data (JSON)</a>
     </p>
@@ -93,7 +101,35 @@
 </div>
 
 <div class="card">
-  <h2>Recorded Consents</h2>
+  <h2>Membership Status Lifecycle History</h2>
+  {% if status_history %}
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Previous Status</th>
+          <th>New Status</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in status_history %}
+          <tr>
+            <td>{{ entry.changed_at|date:"Y-m-d H:i" }}</td>
+            <td><code>{{ entry.previous_status|default:"—" }}</code></td>
+            <td><strong>{{ entry.new_status }}</strong></td>
+            <td>{{ entry.note }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No status transitions recorded yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recorded Consents & Data Deletion Procedure</h2>
   {% if consents %}
     <table>
       <thead>
@@ -109,7 +145,7 @@
           <tr>
             <td><code>{{ c.consent_version }}</code></td>
             <td>{{ c.get_purpose_display }}</td>
-            <td>{{ c.accepted_at }}</td>
+            <td>{{ c.accepted_at|date:"Y-m-d H:i" }}</td>
             <td><small>{{ c.consent_text_snapshot }}</small></td>
           </tr>
         {% endfor %}
@@ -118,5 +154,10 @@
   {% else %}
     <p>No consent records found.</p>
   {% endif %}
+
+  <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+    <h3 style="margin-top: 0; font-size: 1rem;">How Personal Data Deletion Requests Are Handled (MVP Documentation)</h3>
+    <p class="help-text">{{ deletion_procedure }}</p>
+  </div>
 </div>
 {% endblock %}

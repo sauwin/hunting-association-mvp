@@ -1,15 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .forms import FeeCalculatorPreviewForm, MembershipApplicationForm
 from .models import ConsentRecord, MemberProfile, MembershipStatusHistory
 from .services import (
-    DEFAULT_CONSENT_TEXT,
+     DEFAULT_CONSENT_TEXT,
     DEFAULT_CONSENT_VERSION,
+    DELETION_REQUEST_PROCEDURE_TEXT,
     calculate_fee_breakdown,
     create_frozen_fee_quote,
     get_active_fee_rule,
@@ -154,8 +156,56 @@ def application_overview(request: HttpRequest) -> HttpResponse:
             "consents": consents,
             "status_history": status_history,
             "payments": payments,
+            "deletion_procedure": DELETION_REQUEST_PROCEDURE_TEXT,
         },
     )
+
+
+@login_required
+def member_card_view(
+    request: HttpRequest, member_id: int | None = None
+) -> HttpResponse:
+    """Render a printable/downloadable HTML digital member card with strictly MVP fields."""
+    if member_id is not None:
+        profile = get_object_or_404(
+            MemberProfile.objects.select_related("user"),
+            pk=member_id,
+        )
+        if profile.user_id != request.user.id and not request.user.can_manage_members:
+            raise PermissionDenied(
+                "You do not have permission to access another member's card."
+            )
+    else:
+        profile = (
+            MemberProfile.objects.filter(user=request.user)
+            .select_related("user")
+            .first()
+        )
+        if profile is None:
+            messages.info(
+                request,
+                "Please submit a membership application before accessing your digital member card.",
+            )
+            return redirect("membership:apply")
+
+    full_name = (
+        f"{profile.user.first_name} {profile.user.last_name}".strip()
+        or profile.user.username
+    )
+    card_context = {
+        "member_id_display": profile.member_number or "PENDING-APPROVAL",
+        "member_full_name": full_name,
+        "status_display": profile.get_status_display(),
+        "status_code": profile.status,
+        "valid_until": profile.valid_until,
+    }
+
+    response = render(request, "membership/member_card.html", card_context)
+    if request.GET.get("download") == "1":
+        response["Content-Disposition"] = (
+            f'attachment; filename="member_card_{profile.user.username}.html"'
+        )
+    return response
 
 
 @login_required
@@ -166,6 +216,7 @@ def export_my_data(request: HttpRequest) -> JsonResponse:
     payload = {
         "exported_at": timezone.now().isoformat(),
         "notice": "SYNTHETIC DEMO DATA EXPORT — Hunting Association MVP",
+        "deletion_request_procedure": DELETION_REQUEST_PROCEDURE_TEXT,
         "account": {
             "username": request.user.username,
             "email": request.user.email,
