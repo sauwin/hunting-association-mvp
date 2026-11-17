@@ -48,10 +48,12 @@
                     </a>
                 </div>
 
-                <nav class="hidden md:flex space-x-6 items-center">
+                <nav class="hidden lg:flex space-x-5 items-center">
                     <a href="{% url 'public_site:home' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Domov</a>
                     <a href="{% url 'public_site:about' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">O nás</a>
                     <a href="{% url 'public_site:article_list' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Aktuality</a>
+                    <a href="{% url 'public_site:representatives' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Zástupcovia</a>
+                    <a href="{% url 'public_site:volunteer' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Dobrovoľníctvo</a>
                     <a href="{% url 'public_site:how_to_join' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Ako vstúpiť</a>
                     <a href="{% url 'public_site:faq' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">FAQ</a>
                     <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md font-semibold text-sm transition shadow-sm">
@@ -59,7 +61,7 @@
                     </a>
                 </nav>
 
-                <div class="md:hidden flex items-center">
+                <div class="lg:hidden flex items-center">
                     <button id="mobile-menu-btn" type="button" class="text-stone-200 hover:text-white focus:outline-none p-2" aria-label="Toggle menu">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -69,10 +71,12 @@
             </div>
         </div>
 
-        <div id="mobile-menu" class="hidden md:hidden bg-forest-900 px-4 pt-2 pb-4 space-y-2 border-t border-forest-700">
+        <div id="mobile-menu" class="hidden lg:hidden bg-forest-900 px-4 pt-2 pb-4 space-y-2 border-t border-forest-700">
             <a href="{% url 'public_site:home' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Domov</a>
             <a href="{% url 'public_site:about' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">O nás</a>
             <a href="{% url 'public_site:article_list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Aktuality</a>
+            <a href="{% url 'public_site:representatives' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Regionálni zástupcovia</a>
+            <a href="{% url 'public_site:volunteer' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Dobrovoľníctvo</a>
             <a href="{% url 'public_site:how_to_join' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Ako vstúpiť</a>
             <a href="{% url 'public_site:faq' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">FAQ</a>
             <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="block w-full text-center mt-3 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-md font-semibold transition">
@@ -101,6 +105,8 @@
                     <li><a href="{% url 'public_site:home' %}" class="hover:text-white transition">Domov</a></li>
                     <li><a href="{% url 'public_site:about' %}" class="hover:text-white transition">O asociácii</a></li>
                     <li><a href="{% url 'public_site:article_list' %}" class="hover:text-white transition">Aktuality a články</a></li>
+                    <li><a href="{% url 'public_site:representatives' %}" class="hover:text-white transition">Regionálni zástupcovia</a></li>
+                    <li><a href="{% url 'public_site:volunteer' %}" class="hover:text-white transition">Zapojiť sa ako dobrovoľník</a></li>
                     <li><a href="{% url 'public_site:how_to_join' %}" class="hover:text-white transition">Ako sa stať členom</a></li>
                     <li><a href="{% url 'public_site:faq' %}" class="hover:text-white transition">Často kladené otázky</a></li>
                 </ul>

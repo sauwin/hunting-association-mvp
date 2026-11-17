@@ -1,0 +1,93 @@
+{% extends "public_site/base.html" %}
+
+{% block title %}Regionálni zástupcovia | Poľovnícka Asociácia Slovenska{% endblock %}
+{% block meta_description %}Adresár regionálnych a okresných dobrovoľníckych zástupcov Poľovníckej asociácie Slovenska.{% endblock %}
+
+{% block content %}
+<section class="bg-forest-800 text-white py-14 border-b border-forest-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <span class="inline-block bg-forest-700 text-amber-400 text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            Kontakty v regiónoch
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            Regionálni dobrovoľnícki zástupcovia
+        </h1>
+        <p class="text-stone-300 max-w-2xl text-base sm:text-lg leading-relaxed">
+            Máte otázky k činnosti asociácie vo vašom kraji alebo okrese? Obráťte sa na našich poverených regionálnych zástupcov.
+        </p>
+    </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="bg-white rounded-xl border border-stone-200 p-5 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <form method="get" action="{% url 'public_site:representatives' %}" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <label for="region-filter" class="text-sm font-semibold text-stone-700 whitespace-nowrap">
+                Filter podľa kraja / okresu:
+            </label>
+            <select id="region-filter" name="region" onchange="this.form.submit()" class="rounded-lg border border-stone-300 bg-stone-50 px-3.5 py-2 text-sm text-stone-900 focus:border-forest-600 focus:outline-none">
+                <option value="">Všetky regióny ({{ representatives|length }})</option>
+                {% for region in regions %}
+                    <option value="{{ region }}" {% if selected_region == region %}selected{% endif %}>
+                        {{ region }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if selected_region %}
+                <a href="{% url 'public_site:representatives' %}" class="text-sm text-forest-700 hover:text-forest-900 underline font-medium text-center sm:text-left">
+                    Zrušiť filter
+                </a>
+            {% endif %}
+        </form>
+
+        <a href="{% url 'public_site:volunteer' %}" class="inline-flex items-center justify-center bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+            Stať sa dobrovoľníkom →
+        </a>
+    </div>
+
+    {% if representatives %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for rep in representatives %}
+                <article class="bg-white rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition flex flex-col justify-between p-6">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-forest-100 text-forest-800">
+                                {{ rep.region }}
+                            </span>
+                            <span class="text-xs text-stone-500 font-medium">
+                                {{ rep.role }}
+                            </span>
+                        </div>
+                        <h2 class="text-xl font-bold text-stone-900 mb-2">
+                            {{ rep.display_name }}
+                        </h2>
+                        <p class="text-sm text-stone-600 leading-relaxed mb-4">
+                            {{ rep.bio }}
+                        </p>
+                    </div>
+
+                    <div class="pt-4 border-t border-stone-100 space-y-2.5 text-sm">
+                        <div>
+                            <span class="font-semibold text-stone-700 block text-xs uppercase tracking-wider">Oblasti pôsobenia</span>
+                            <span class="text-stone-600">{{ rep.areas_of_interest }}</span>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-stone-700 block text-xs uppercase tracking-wider">Verejný kontakt</span>
+                            <span class="text-forest-700 font-medium break-all">{{ rep.public_contact }}</span>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white rounded-xl border border-stone-200 p-10 text-center">
+            <h3 class="text-lg font-bold text-stone-900 mb-2">Pre zvolený filter sa nenašli žiadni zástupcovia</h3>
+            <p class="text-stone-600 text-sm mb-5">
+                Skúste vybrať iný kraj alebo sa prihláste ako regionálny dobrovoľník pre túto oblasť.
+            </p>
+            <a href="{% url 'public_site:volunteer' %}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition">
+                Prihlásiť sa ako dobrovoľník
+            </a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
