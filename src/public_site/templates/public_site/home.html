@@ -8,7 +8,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left">
         <div class="max-w-3xl">
             <span class="inline-block bg-forest-700 text-forest-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-4 border border-forest-600">
-                Ochrana prírody &bull; Tradícia &bull; Komunita
+                Ochrana prírody • Tradícia • Komunita
             </span>
             <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-6 leading-tight">
                 Zachovanie prírody a zodpovedný výkon poľovníctva
@@ -21,14 +21,14 @@
                     Podať prihlášku za člena
                 </a>
                 <a href="{% url 'public_site:how_to_join' %}" class="bg-forest-700 hover:bg-forest-600 text-white border border-forest-600 px-6 py-3.5 rounded-md font-semibold text-center transition">
-                    Ako sa stať členom &rarr;
+                    Ako sa stať členom →
                 </a>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Facts & Figures Section (Fakty a čísla) -->
+<!-- Facts & Figures Section -->
 <section class="bg-forest-900 text-white py-10 border-b border-forest-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
@@ -52,7 +52,7 @@
     </div>
 </section>
 
-<!-- Key Pillars of Activity (Kľúčové piliere činnosti) -->
+<!-- Key Pillars of Activity -->
 <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center max-w-2xl mx-auto mb-12">
         <h2 class="text-2xl sm:text-3xl font-bold text-forest-900 mb-3">Kľúčové piliere našej činnosti</h2>
@@ -101,6 +101,51 @@
     </div>
 </section>
 
+<!-- Latest News & Articles Section -->
+{% if latest_articles %}
+<section class="py-14 bg-white border-t border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-forest-900">Najnovšie aktuality a články</h2>
+                <p class="text-stone-600 text-sm mt-1">Aktuálne informácie z ochrany prírody, legislatívy a regionálnych podujatí.</p>
+            </div>
+            <a href="{% url 'public_site:article_list' %}" class="text-forest-700 hover:text-forest-900 font-semibold text-sm">
+                Zobraziť všetky články →
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for article in latest_articles %}
+            <article class="bg-stone-50 rounded-xl border border-stone-200 overflow-hidden flex flex-col hover:shadow-md transition">
+                <div class="p-6 flex-1 flex flex-col">
+                    <div class="flex items-center gap-2 text-xs text-stone-500 mb-3">
+                        <span class="font-semibold text-forest-700 bg-forest-50 px-2.5 py-0.5 rounded border border-forest-100">
+                            {{ article.category.name }}
+                        </span>
+                        {% if article.published_at %}
+                        <span>• {{ article.published_at|date:"d. m. Y" }}</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="text-lg font-bold text-forest-900 mb-2 leading-snug">
+                        <a href="{{ article.get_absolute_url }}" class="hover:text-forest-700 transition">
+                            {{ article.title }}
+                        </a>
+                    </h3>
+                    <p class="text-stone-600 text-sm mb-4 flex-1">
+                        {{ article.summary|truncatewords:22 }}
+                    </p>
+                    <a href="{{ article.get_absolute_url }}" class="text-forest-700 font-semibold text-xs hover:underline">
+                        Čítať viac →
+                    </a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Member Benefits Section -->
 <section class="py-12 bg-stone-100 border-t border-stone-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -111,15 +156,15 @@
                     Okrem možnosti podieľať sa na aktívnej ochrane slovenskej prírody získava každý člen komplexné poistenie zodpovednosti za škodu pri výkone práva poľovníctva, prístup k odborným seminárom a právne zastupovanie.
                 </p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-forest-800 font-medium">
-                    <div class="flex items-center gap-2">&check; Zákonné poľovnícke poistenie</div>
-                    <div class="flex items-center gap-2">&check; Odborné strelecké a kynologické kurzy</div>
-                    <div class="flex items-center gap-2">&check; Právne a legislatívne poradenstvo</div>
-                    <div class="flex items-center gap-2">&check; Prístup do členskej evidencie</div>
+                    <div class="flex items-center gap-2">✓ Zákonné poľovnícke poistenie</div>
+                    <div class="flex items-center gap-2">✓ Odborné strelecké a kynologické kurzy</div>
+                    <div class="flex items-center gap-2">✓ Právne a legislatívne poradenstvo</div>
+                    <div class="flex items-center gap-2">✓ Prístup do členskej evidencie</div>
                 </div>
             </div>
             <div class="text-center lg:text-right">
                 <a href="{% url 'public_site:how_to_join' %}" class="inline-block bg-forest-700 hover:bg-forest-800 text-white px-6 py-3 rounded-md font-semibold text-sm transition shadow-sm">
-                    Zobraziť podmienky prijatia &rarr;
+                    Zobraziť podmienky prijatia →
                 </a>
             </div>
         </div>
@@ -136,7 +181,7 @@
                 <p class="text-stone-600 text-sm">Rýchle odpovede na najčastejšie otázky ohľadom členstva.</p>
             </div>
             <a href="{% url 'public_site:faq' %}" class="text-forest-700 hover:text-forest-900 font-semibold text-sm">
-                Zobraziť všetky FAQ &rarr;
+                Zobraziť všetky FAQ →
             </a>
         </div>
 
