@@ -84,3 +84,13 @@
   - Personally verified and fine-tuned server-side role-based access control (RBAC) in `article_detail_view` to guarantee that anonymous visitors receive a secure HTTP 404 on drafts, while authorised staff/editors can safely preview them via a distinct warning banner.
   - Hand-crafted realistic Slovak seed data and tailored category descriptions reflecting the authentic domain terminology of the Slovak Hunting Association (Slovenská poľovnícka komora).
   - Wrote, executed, and successfully passed all unit tests (`Ran 8 tests - OK`) covering article visibility, draft security, and category filtering.
+
+  ## Entry 7 — Membership Application Form, Fee Preview, Consent Capture & GDPR Export
+- **Date:** 2026-11-16
+- **Task / Issue:** Implement web forms, controller views, HTML templates, and integration tests for membership application, fee calculator preview, versioned consent capture, and personal data JSON export (Student A scope, Issue #12).
+- **Prompt Summary:** Asked AI to create `FeeCalculatorPreviewForm` and `MembershipApplicationForm` in `forms.py`, implement `views.py` and `urls.py` with atomic transaction handling, build templates under `src/membership/templates/membership/`, troubleshoot `TemplateDoesNotExist` after container restart, and write integration tests.
+- **AI Output:** Generated `src/membership/forms.py`, `src/membership/views.py`, `src/membership/urls.py`, 4 HTML templates, and `MembershipApplicationAndExportViewsTests` in `src/membership/tests.py`.
+- **Verification & Human Changes:**
+  - Restarted Docker `web` service so Django template loader detected the new `src/membership/templates/` directory and manually tested `/membership/calculator/`, `/membership/apply/`, and `/membership/my-application/` in the browser.
+  - Ran `docker compose exec web python manage.py test membership` and verified all 8 tests pass (covering licence validation, explicit consent requirement, frozen quote snapshot creation, and JSON data export).
+
