@@ -1,0 +1,109 @@
+{% extends "membership/base_membership.html" %}
+
+{% block title %}Secretariat Back Office — Members Directory{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <h1 style="margin: 0;">Secretariat Back Office — Member Directory</h1>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'membership:backoffice_quick_add' %}" class="btn">+ Quick-Add Member</a>
+      <a href="{% url 'membership:backoffice_export_csv' %}?q={{ search_query|urlencode }}&status={{ status_filter|urlencode }}&member_type={{ member_type_filter|urlencode }}" class="btn btn-secondary">
+        Export Filtered CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="stats-row" style="margin-top: 1rem;">
+    <div class="stat-box"><strong>Total Profiles:</strong> {{ total_count }}</div>
+    <div class="stat-box"><strong>Applicants (Pending):</strong> {{ applicant_count }}</div>
+    <div class="stat-box"><strong>Active Members:</strong> {{ active_count }}</div>
+  </div>
+
+  <form method="get" action="{% url 'membership:backoffice_member_list' %}" class="filter-bar">
+    <div>
+      <label for="id_q" style="display: block; font-size: 0.85rem; font-weight: 600;">Search</label>
+      <input type="text" id="id_q" name="q" value="{{ search_query }}" placeholder="Name, ID, email, city, phone..." style="min-width: 240px;">
+    </div>
+
+    <div>
+      <label for="id_status" style="display: block; font-size: 0.85rem; font-weight: 600;">Status</label>
+      <select id="id_status" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="id_member_type" style="display: block; font-size: 0.85rem; font-weight: 600;">Category</label>
+      <select id="id_member_type" name="member_type">
+        <option value="">All categories</option>
+        {% for value, label in member_type_choices %}
+          <option value="{{ value }}" {% if member_type_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn">Filter</button>
+    {% if search_query or status_filter or member_type_filter %}
+      <a href="{% url 'membership:backoffice_member_list' %}" class="btn btn-secondary">Reset</a>
+    {% endif %}
+  </form>
+
+  {% if page_obj.object_list %}
+    <table>
+      <thead>
+        <tr>
+          <th>Member ID</th>
+          <th>Name & Account</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Valid Until</th>
+          <th>Latest Payment</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for profile in page_obj %}
+          <tr>
+            <td><code>{{ profile.member_number|default:"Pending" }}</code></td>
+            <td>
+              <strong>{{ profile.user.first_name }} {{ profile.user.last_name }}</strong><br>
+              <small>{{ profile.user.username }} · {{ profile.user.email }}</small>
+            </td>
+            <td>{{ profile.get_member_type_display }}</td>
+            <td><strong>{{ profile.get_status_display }}</strong></td>
+            <td>{{ profile.valid_until|date:"Y-m-d"|default:"—" }}</td>
+            <td>
+              {% with latest_payment=profile.payments.all.0 %}
+                {% if latest_payment %}
+                  {{ latest_payment.get_status_display }} ({{ latest_payment.amount }} {{ latest_payment.currency }})
+                {% else %}
+                  None
+                {% endif %}
+              {% endwith %}
+            </td>
+            <td>
+              <a href="{% url 'membership:backoffice_member_detail' profile.pk %}" class="btn btn-sm">Manage</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}&q={{ search_query|urlencode }}&status={{ status_filter|urlencode }}&member_type={{ member_type_filter|urlencode }}">Previous</a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}&q={{ search_query|urlencode }}&status={{ status_filter|urlencode }}&member_type={{ member_type_filter|urlencode }}">Next</a>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>No member profiles match the current filters.</p>
+  {% endif %}
+</div>
+{% endblock %}
