@@ -1,7 +1,14 @@
 from django.contrib import admin
 from django.utils import timezone
 
-from .models import FAQ, Article, Category, Representative, VolunteerEnquiry
+from .models import (
+    FAQ,
+    Article,
+    Category,
+    MembershipEnquiry,
+    Representative,
+    VolunteerEnquiry,
+)
 
 
 @admin.register(Category)
@@ -102,3 +109,52 @@ class VolunteerEnquiryAdmin(admin.ModelAdmin):
     @admin.action(description="Mark selected enquiries as Declined")
     def mark_as_declined(self, request, queryset):
         queryset.update(status=VolunteerEnquiry.Status.DECLINED)
+
+
+@admin.register(MembershipEnquiry)
+class MembershipEnquiryAdmin(admin.ModelAdmin):
+    list_display = (
+        "full_name",
+        "preferred_membership_type",
+        "region",
+        "email",
+        "has_hunting_licence",
+        "status",
+        "consent_given",
+        "created_at",
+    )
+    list_filter = (
+        "status",
+        "preferred_membership_type",
+        "has_hunting_licence",
+        "region",
+        "consent_given",
+        "created_at",
+    )
+    list_editable = ("status",)
+    search_fields = ("full_name", "email", "region", "message")
+    readonly_fields = (
+        "full_name",
+        "email",
+        "phone",
+        "region",
+        "preferred_membership_type",
+        "has_hunting_licence",
+        "message",
+        "consent_given",
+        "created_at",
+        "updated_at",
+    )
+    actions = ["mark_as_contacted", "mark_as_converted", "mark_as_closed"]
+
+    @admin.action(description="Mark selected enquiries as Contacted")
+    def mark_as_contacted(self, request, queryset):
+        queryset.update(status=MembershipEnquiry.Status.CONTACTED)
+
+    @admin.action(description="Mark selected enquiries as Converted to Applicant")
+    def mark_as_converted(self, request, queryset):
+        queryset.update(status=MembershipEnquiry.Status.CONVERTED)
+
+    @admin.action(description="Mark selected enquiries as Closed")
+    def mark_as_closed(self, request, queryset):
+        queryset.update(status=MembershipEnquiry.Status.CLOSED)
