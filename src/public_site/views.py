@@ -5,19 +5,41 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import NoReverseMatch, reverse
 
-from .forms import VolunteerEnquiryForm
+from .forms import MembershipEnquiryForm, VolunteerEnquiryForm
 from .models import FAQ, Article, Category, Representative
 
 logger = logging.getLogger(__name__)
 
 
+def _safe_reverse(url_name: str, fallback: str) -> str:
+    try:
+        return reverse(url_name)
+    except NoReverseMatch:
+        return fallback
+
+
 def get_membership_register_url() -> str:
-    return getattr(
+    configured = getattr(
         settings,
         "MEMBERSHIP_REGISTER_URL",
-        getattr(settings, "MEMBERSHIP_REGISTRATION_URL", "/membership/apply/"),
+        getattr(settings, "MEMBERSHIP_REGISTRATION_URL", None),
     )
+    if configured:
+        return configured
+    return _safe_reverse("membership:apply", "/membership/apply/")
+
+
+def get_student_a_handoff_context() -> dict:
+    return {
+        "membership_register_url": get_membership_register_url(),
+        "account_register_url": _safe_reverse("accounts:register", "/accounts/register/"),
+        "membership_apply_url": _safe_reverse("membership:apply", "/membership/apply/"),
+        "membership_calculator_url": _safe_reverse(
+            "membership:fee_calculator", "/membership/calculator/"
+        ),
+    }
 
 
 def can_preview_drafts(user) -> bool:
@@ -38,7 +60,7 @@ def home_view(request):
         .select_related("category")[:3]
     )
     context = {
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
         "featured_faqs": FAQ.objects.filter(is_published=True)[:3],
         "latest_articles": latest_articles,
     }
@@ -47,14 +69,14 @@ def home_view(request):
 
 def about_view(request):
     context = {
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
     }
     return render(request, "public_site/about.html", context)
 
 
 def how_to_join_view(request):
     context = {
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
     }
     return render(request, "public_site/how_to_join.html", context)
 
@@ -63,7 +85,7 @@ def faq_view(request):
     faqs = FAQ.objects.filter(is_published=True)
     context = {
         "faqs": faqs,
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
     }
     return render(request, "public_site/faq.html", context)
 
@@ -88,7 +110,7 @@ def article_list_view(request, category_slug=None):
         "active_category": active_category,
         "page_obj": page_obj,
         "articles": page_obj.object_list,
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
     }
     return render(request, "public_site/article_list.html", context)
 
@@ -118,7 +140,7 @@ def article_detail_view(request, slug):
         "article": article,
         "is_preview": is_preview,
         "related_articles": related_articles,
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
     }
     return render(request, "public_site/article_detail.html", context)
 
@@ -139,7 +161,7 @@ def representatives_view(request):
         "representatives": active_reps,
         "regions": regions,
         "selected_region": selected_region,
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
     }
     return render(request, "public_site/representatives.html", context)
 
@@ -164,6 +186,32 @@ def volunteer_view(request):
 
     context = {
         "form": form,
-        "membership_register_url": get_membership_register_url(),
+        **get_student_a_handoff_context(),
     }
     return render(request, "public_site/volunteer.html", context)
+
+
+def membership_interest_view(request):
+    if request.method == "POST":
+        form = MembershipEnquiryForm(request.POST)
+        if form.is_valid():
+            enquiry = form.save()
+            logger.info(
+                "New membership enquiry submitted: id=%s type=%s region=%s",
+                enquiry.id,
+                enquiry.preferred_membership_type,
+                enquiry.region,
+            )
+            messages.success(
+                request,
+                "Ďakujeme za váš záujem o členstvo! Váš dopyt sme zaevidovali. Ak ste pripravení podať riadnu prihlášku, môžete tak urobiť priamo online nižšie.",
+            )
+            return redirect("public_site:membership_interest")
+    else:
+        form = MembershipEnquiryForm()
+
+    context = {
+        "form": form,
+        **get_student_a_handoff_context(),
+    }
+    return render(request, "public_site/membership_interest.html", context)
