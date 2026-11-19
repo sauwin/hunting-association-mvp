@@ -1,9 +1,15 @@
+import logging
+
 from django.conf import settings
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import Http404
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import FAQ, Article, Category
+from .forms import VolunteerEnquiryForm
+from .models import FAQ, Article, Category, Representative
+
+logger = logging.getLogger(__name__)
 
 
 def get_membership_register_url() -> str:
@@ -115,3 +121,49 @@ def article_detail_view(request, slug):
         "membership_register_url": get_membership_register_url(),
     }
     return render(request, "public_site/article_detail.html", context)
+
+
+def representatives_view(request):
+    active_reps = Representative.objects.filter(is_active=True)
+    regions = (
+        active_reps.order_by("region")
+        .values_list("region", flat=True)
+        .distinct()
+    )
+
+    selected_region = request.GET.get("region", "").strip()
+    if selected_region:
+        active_reps = active_reps.filter(region=selected_region)
+
+    context = {
+        "representatives": active_reps,
+        "regions": regions,
+        "selected_region": selected_region,
+        "membership_register_url": get_membership_register_url(),
+    }
+    return render(request, "public_site/representatives.html", context)
+
+
+def volunteer_view(request):
+    if request.method == "POST":
+        form = VolunteerEnquiryForm(request.POST)
+        if form.is_valid():
+            enquiry = form.save()
+            logger.info(
+                "New volunteer enquiry submitted: id=%s region=%s",
+                enquiry.id,
+                enquiry.region,
+            )
+            messages.success(
+                request,
+                "Ďakujeme za váš záujem o dobrovoľníctvo! Vašu prihlášku sme zaznamenali a čoskoro sa vám ozveme.",
+            )
+            return redirect("public_site:volunteer")
+    else:
+        form = VolunteerEnquiryForm()
+
+    context = {
+        "form": form,
+        "membership_register_url": get_membership_register_url(),
+    }
+    return render(request, "public_site/volunteer.html", context)

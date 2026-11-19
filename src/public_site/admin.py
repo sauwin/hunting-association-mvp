@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils import timezone
 
-from .models import FAQ, Article, Category
+from .models import FAQ, Article, Category, Representative, VolunteerEnquiry
 
 
 @admin.register(Category)
@@ -39,3 +39,66 @@ class FAQAdmin(admin.ModelAdmin):
     list_filter = ("is_published",)
     list_editable = ("display_order", "is_published")
     search_fields = ("question", "answer")
+
+
+@admin.register(Representative)
+class RepresentativeAdmin(admin.ModelAdmin):
+    list_display = (
+        "display_name",
+        "region",
+        "role",
+        "public_contact",
+        "is_active",
+        "display_order",
+    )
+    list_filter = ("is_active", "region")
+    list_editable = ("is_active", "display_order")
+    search_fields = ("display_name", "region", "role", "areas_of_interest")
+    actions = ["activate_representatives", "deactivate_representatives"]
+
+    @admin.action(description="Activate selected representatives")
+    def activate_representatives(self, request, queryset):
+        queryset.update(is_active=True)
+
+    @admin.action(description="Deactivate selected representatives")
+    def deactivate_representatives(self, request, queryset):
+        queryset.update(is_active=False)
+
+
+@admin.register(VolunteerEnquiry)
+class VolunteerEnquiryAdmin(admin.ModelAdmin):
+    list_display = (
+        "full_name",
+        "region",
+        "email",
+        "status",
+        "consent_given",
+        "created_at",
+    )
+    list_filter = ("status", "region", "consent_given", "created_at")
+    list_editable = ("status",)
+    search_fields = ("full_name", "email", "region", "interests", "message")
+    readonly_fields = (
+        "full_name",
+        "region",
+        "email",
+        "phone",
+        "interests",
+        "message",
+        "consent_given",
+        "created_at",
+        "updated_at",
+    )
+    actions = ["mark_as_contacted", "mark_as_accepted", "mark_as_declined"]
+
+    @admin.action(description="Mark selected enquiries as Contacted")
+    def mark_as_contacted(self, request, queryset):
+        queryset.update(status=VolunteerEnquiry.Status.CONTACTED)
+
+    @admin.action(description="Mark selected enquiries as Accepted")
+    def mark_as_accepted(self, request, queryset):
+        queryset.update(status=VolunteerEnquiry.Status.ACCEPTED)
+
+    @admin.action(description="Mark selected enquiries as Declined")
+    def mark_as_declined(self, request, queryset):
+        queryset.update(status=VolunteerEnquiry.Status.DECLINED)

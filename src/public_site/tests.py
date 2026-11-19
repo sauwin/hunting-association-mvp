@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import FAQ, Article, Category
+from .models import FAQ, Article, Category, Representative, VolunteerEnquiry
 
 User = get_user_model()
 
@@ -30,6 +30,8 @@ class PublicSiteViewsTest(TestCase):
             "public_site:how_to_join",
             "public_site:faq",
             "public_site:article_list",
+            "public_site:representatives",
+            "public_site:volunteer",
         ]
         for route in routes:
             response = self.client.get(reverse(route))
@@ -152,3 +154,111 @@ class ArticleModuleTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.draft_article.title)
         self.assertContains(response, "NÁHĽAD ROZPRACOVANÉHO ČLÁNKU")
+
+
+class RepresentativesAndVolunteerModuleTest(TestCase):
+    def setUp(self):
+        self.active_rep_nitra = Representative.objects.create(
+            region="Nitriansky kraj",
+            display_name="Ing. Marek Kováč",
+            role="Krajský koordinátor",
+            public_contact="marek.kovac.demo@example.sk",
+            bio="Koordinácia dobrovoľníkov v Nitrianskom kraji.",
+            areas_of_interest="Ochrana zveri, osveta",
+            is_active=True,
+            display_order=1,
+        )
+        self.active_rep_zilina = Representative.objects.create(
+            region="Žilinský kraj",
+            display_name="Mgr. Katarína Horváthová",
+            role="Regionálna zástupkyňa",
+            public_contact="katarina.horvathova.demo@example.sk",
+            bio="Práca s mládežou v Žilinskom kraji.",
+            areas_of_interest="Práca s mládežou",
+            is_active=True,
+            display_order=2,
+        )
+        self.inactive_rep = Representative.objects.create(
+            region="Trnavský kraj",
+            display_name="Peter Neaktívny",
+            role="Bývalý kontakt",
+            public_contact="peter.neaktivny.demo@example.sk",
+            bio="Tento záznam je neaktívny.",
+            areas_of_interest="Administratíva",
+            is_active=False,
+            display_order=3,
+        )
+
+    def test_directory_shows_only_active_representatives(self):
+        """Public directory displays active representatives and hides inactive ones."""
+        response = self.client.get(reverse("public_site:representatives"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.active_rep_nitra.display_name)
+        self.assertContains(response, self.active_rep_zilina.display_name)
+        self.assertNotContains(response, self.inactive_rep.display_name)
+        self.assertNotContains(response, self.inactive_rep.public_contact)
+
+    def test_directory_region_filter_works(self):
+        """Filtering by region returns only matching active representatives."""
+        url = reverse("public_site:representatives")
+        response = self.client.get(url, {"region": "Nitriansky kraj"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.active_rep_nitra.display_name)
+        self.assertNotContains(response, self.active_rep_zilina.display_name)
+
+    def test_volunteer_form_valid_submission_creates_private_enquiry(self):
+        """Valid volunteer submission saves with NEW status and is not exposed publicly."""
+        url = reverse("public_site:volunteer")
+        payload = {
+            "full_name": "Lucia Kráľová",
+            "region": "Nitriansky kraj",
+            "email": "lucia.test@example.sk",
+            "phone": "+421 900 123 456",
+            "interests": "Ochrana prírody",
+            "message": "Rada by som sa zapojila ako dobrovoľníčka.",
+            "consent_given": "on",
+            "website": "",
+        }
+        response = self.client.post(url, data=payload, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(VolunteerEnquiry.objects.count(), 1)
+
+        enquiry = VolunteerEnquiry.objects.first()
+        self.assertEqual(enquiry.full_name, "Lucia Kráľová")
+        self.assertEqual(enquiry.status, VolunteerEnquiry.Status.NEW)
+        self.assertTrue(enquiry.consent_given)
+
+        # Verify submission email is not publicly exposed on directory or volunteer pages
+        dir_response = self.client.get(reverse("public_site:representatives"))
+        self.assertNotContains(dir_response, "lucia.test@example.sk")
+
+    def test_volunteer_form_requires_consent(self):
+        """Submitting without consent checkbox must fail validation and save nothing."""
+        url = reverse("public_site:volunteer")
+        payload = {
+            "full_name": "Bez Súhlasu",
+            "region": "Bratislavský kraj",
+            "email": "bez.suhlasu@example.sk",
+            "interests": "Podujatia",
+            "message": "Test bez súhlasu.",
+            "website": "",
+        }
+        response = self.client.post(url, data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(VolunteerEnquiry.objects.count(), 0)
+
+    def test_volunteer_form_honeypot_blocks_spam(self):
+        """Filling the hidden honeypot field rejects spam submissions."""
+        url = reverse("public_site:volunteer")
+        payload = {
+            "full_name": "Spam Bot",
+            "region": "Unknown",
+            "email": "bot@spam.example.com",
+            "interests": "SEO links",
+            "message": "Buy cheap products",
+            "consent_given": "on",
+            "website": "https://spam.example.com",
+        }
+        response = self.client.post(url, data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(VolunteerEnquiry.objects.count(), 0)
