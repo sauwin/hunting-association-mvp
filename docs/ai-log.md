@@ -125,3 +125,13 @@
   - Verified `/membership/backoffice/`, member detail approval/payment forms, quick-add workflow, and filtered CSV download in the browser.
   - Ran `docker compose exec web python manage.py test membership` and verified all 16 tests pass, confirming regular `member` accounts receive HTTP 403 on all secretariat endpoints.
 
+## Entry 11 — Membership Interest Enquiry & Student A Registration Integration
+- **Date:** 2026-11-19
+- **Task / Issue:** Implement Block 5 (`MembershipEnquiry` model and migration, Django Admin workflow, `MembershipEnquiryForm` with consent and honeypot protection, `/membership-interest/` view and template, unified handoff links into Student A's registration/application flow, and integration tests) (`public_site` app, Student B scope, Issue #27).
+- **Prompt Summary:** Consulted AI on structuring pre-registration membership enquiry fields and verifying seamless URL handoff integration with Student A's `accounts` and `membership` endpoints.
+- **AI Output:** Provided reference structure for `MembershipEnquiry`, `MembershipEnquiryForm`, and baseline integration test cases.
+- **Verification & Human Changes:**
+  - Independently created the `MembershipEnquiry` model in `src/public_site/models.py`, generated and applied migration `0004_membershipenquiry`, and managed the `feat/27-membership-interest-integration` Git branch with atomic commits.
+  - Configured `MembershipEnquiryAdmin` in `src/public_site/admin.py` with status filtering (`NEW`, `CONTACTED`, `CONVERTED`, `CLOSED`), bulk actions, and read-only protection for submitted visitor details.
+  - Built and styled `membership_interest.html` and updated `how_to_join.html` and `base.html` to provide a clear, unified handoff path into Student A's `/membership/apply/`, `/accounts/register/`, and `/membership/calculator/` routes.
+  - Executed `docker compose exec web python manage.py test public_site` and confirmed all 18 unit and integration tests pass.
