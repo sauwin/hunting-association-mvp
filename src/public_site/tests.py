@@ -2,7 +2,14 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import FAQ, Article, Category, Representative, VolunteerEnquiry
+from .models import (
+    FAQ,
+    Article,
+    Category,
+    MembershipEnquiry,
+    Representative,
+    VolunteerEnquiry,
+)
 
 User = get_user_model()
 
@@ -32,6 +39,7 @@ class PublicSiteViewsTest(TestCase):
             "public_site:article_list",
             "public_site:representatives",
             "public_site:volunteer",
+            "public_site:membership_interest",
         ]
         for route in routes:
             response = self.client.get(reverse(route))
@@ -228,7 +236,6 @@ class RepresentativesAndVolunteerModuleTest(TestCase):
         self.assertEqual(enquiry.status, VolunteerEnquiry.Status.NEW)
         self.assertTrue(enquiry.consent_given)
 
-        # Verify submission email is not publicly exposed on directory or volunteer pages
         dir_response = self.client.get(reverse("public_site:representatives"))
         self.assertNotContains(dir_response, "lucia.test@example.sk")
 
@@ -262,3 +269,89 @@ class RepresentativesAndVolunteerModuleTest(TestCase):
         response = self.client.post(url, data=payload)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(VolunteerEnquiry.objects.count(), 0)
+
+
+class MembershipInterestAndStudentAIntegrationTest(TestCase):
+    def test_membership_interest_page_exposes_student_a_handoff_links(self):
+        """Membership interest page provides direct links into Student A's registration and apply flow."""
+        response = self.client.get(reverse("public_site:membership_interest"))
+        self.assertEqual(response.status_code, 200)
+
+        apply_url = response.context["membership_apply_url"]
+        register_url = response.context["account_register_url"]
+        calculator_url = response.context["membership_calculator_url"]
+
+        self.assertContains(response, f'href="{apply_url}"')
+        self.assertContains(response, f'href="{register_url}"')
+        self.assertContains(response, f'href="{calculator_url}"')
+
+    def test_student_a_registration_and_apply_endpoints_reachable(self):
+        """Verify Student A's real registration and membership application endpoints respond properly."""
+        register_response = self.client.get(reverse("accounts:register"))
+        self.assertEqual(register_response.status_code, 200)
+
+        # Anonymous user accessing membership:apply is redirected cleanly to login/registration
+        apply_response = self.client.get(reverse("membership:apply"))
+        self.assertIn(apply_response.status_code, (200, 302))
+
+    def test_membership_enquiry_valid_submission_creates_private_record(self):
+        """Valid membership enquiry saves with NEW status and stays private from public pages."""
+        url = reverse("public_site:membership_interest")
+        payload = {
+            "full_name": "Martin Kováčik",
+            "email": "martin.enquiry@example.sk",
+            "phone": "+421 905 111 222",
+            "region": "Trnavský kraj",
+            "preferred_membership_type": MembershipEnquiry.MembershipType.CANDIDATE,
+            "has_hunting_licence": False,
+            "message": "Zaujímam sa o prípravný kurz na prvý poľovný lístok.",
+            "consent_given": "on",
+            "website": "",
+        }
+        response = self.client.post(url, data=payload, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(MembershipEnquiry.objects.count(), 1)
+
+        enquiry = MembershipEnquiry.objects.first()
+        self.assertEqual(enquiry.full_name, "Martin Kováčik")
+        self.assertEqual(
+            enquiry.preferred_membership_type,
+            MembershipEnquiry.MembershipType.CANDIDATE,
+        )
+        self.assertEqual(enquiry.status, MembershipEnquiry.Status.NEW)
+        self.assertTrue(enquiry.consent_given)
+
+        # Ensure enquiry email is never exposed publicly
+        public_page = self.client.get(reverse("public_site:membership_interest"))
+        self.assertNotContains(public_page, "martin.enquiry@example.sk")
+
+    def test_membership_enquiry_requires_consent(self):
+        """Submitting membership enquiry without consent checkbox must fail validation."""
+        url = reverse("public_site:membership_interest")
+        payload = {
+            "full_name": "Bez Súhlasu",
+            "email": "no.consent@example.sk",
+            "region": "Nitriansky kraj",
+            "preferred_membership_type": MembershipEnquiry.MembershipType.REGULAR,
+            "message": "Otázka bez súhlasu.",
+            "website": "",
+        }
+        response = self.client.post(url, data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(MembershipEnquiry.objects.count(), 0)
+
+    def test_membership_enquiry_honeypot_blocks_spam(self):
+        """Filling hidden honeypot field rejects spam submissions."""
+        url = reverse("public_site:membership_interest")
+        payload = {
+            "full_name": "Spam Bot",
+            "email": "bot@spam.example.com",
+            "region": "Unknown",
+            "preferred_membership_type": MembershipEnquiry.MembershipType.REGULAR,
+            "message": "Spam text",
+            "consent_given": "on",
+            "website": "https://spam.example.com",
+        }
+        response = self.client.post(url, data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(MembershipEnquiry.objects.count(), 0)
