@@ -11,4 +11,26 @@ urlpatterns = [
     path("my-card/", views.member_card_view, name="my_card"),
     path("cards/<int:member_id>/", views.member_card_view, name="member_card_detail"),
     path("export-data/", views.export_my_data, name="export_my_data"),
+    # Secretariat Back Office
+    path("backoffice/", views.backoffice_member_list, name="backoffice_member_list"),
+    path(
+        "backoffice/members/quick-add/",
+        views.backoffice_quick_add_member,
+        name="backoffice_quick_add",
+    ),
+    path(
+        "backoffice/members/<int:member_id>/",
+        views.backoffice_member_detail,
+        name="backoffice_member_detail",
+    ),
+    path(
+        "backoffice/payments/<int:payment_id>/status/",
+        views.backoffice_update_payment_status,
+        name="backoffice_update_payment_status",
+    ),
+    path(
+        "backoffice/export-csv/",
+        views.backoffice_export_csv,
+        name="backoffice_export_csv",
+    ),
 ]

@@ -1,3 +1,4 @@
+import csv
 import json
 from datetime import date
 from decimal import Decimal
@@ -14,7 +15,9 @@ from .models import (
     FeeRule,
     MemberProfile,
     MembershipStatusHistory,
+    PaymentRecord,
 )
+
 from .services import (
     DEFAULT_CONSENT_TEXT,
     DEFAULT_CONSENT_VERSION,
@@ -378,3 +381,300 @@ class MembershipLifecycleAndCardTests(TestCase):
         )
         self.assertEqual(allowed_response.status_code, 200)
         self.assertContains(allowed_response, "Marek Horvath")
+
+class SecretariatBackOfficeTests(TestCase):
+    def setUp(self):
+        self.secretariat_user = User.objects.create_user(
+            username="secretariat_bo",
+            email="secretariat_bo@example.test",
+            password="StrongPassword123!",
+            role=User.Role.SECRETARIAT,
+        )
+        self.member_user = User.objects.create_user(
+            username="regular_member",
+            email="regular_member@example.test",
+            password="StrongPassword123!",
+            first_name="Lukas",
+            last_name="Bielik",
+            role=User.Role.MEMBER,
+        )
+        self.rule = FeeRule.objects.create(
+            version="2026-v1-sample",
+            name="2026 Standard Membership Fee Schedule (Sample)",
+            base_fee_hunter=Decimal("60.00"),
+            base_fee_non_hunter=Decimal("35.00"),
+            insurance_addon_fee=Decimal("25.00"),
+            reduced_discount_amount=Decimal("15.00"),
+            currency="EUR",
+            is_active=True,
+            is_placeholder=True,
+        )
+        self.profile = MemberProfile.objects.create(
+            user=self.member_user,
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900111999",
+            street_address="Lesna 15",
+            city="Nitra",
+            postal_code="94901",
+            status=MemberProfile.Status.APPLICANT,
+        )
+        self.quote = create_frozen_fee_quote(
+            member=self.profile,
+            include_insurance=True,
+            apply_reduced_rate=False,
+            fee_rule=self.rule,
+        )
+
+    def test_member_cannot_access_secretariat_backoffice_actions(self):
+        payment = PaymentRecord.objects.create(
+            member=self.profile,
+            quote=self.quote,
+            status=PaymentRecord.Status.PENDING,
+            amount=Decimal("85.00"),
+            currency="EUR",
+            reference="REF-001",
+        )
+
+        # Unauthenticated requests redirect to login
+        anon_response = self.client.get(reverse("membership:backoffice_member_list"))
+        self.assertEqual(anon_response.status_code, 302)
+        self.assertIn("/accounts/login/", anon_response["Location"])
+
+        # Authenticated regular member is blocked with HTTP 403 on all staff endpoints
+        self.client.force_login(self.member_user)
+        self.assertEqual(
+            self.client.get(reverse("membership:backoffice_member_list")).status_code,
+            403,
+        )
+        self.assertEqual(
+            self.client.get(
+                reverse(
+                    "membership:backoffice_member_detail",
+                    kwargs={"member_id": self.profile.pk},
+                )
+            ).status_code,
+            403,
+        )
+        self.assertEqual(
+            self.client.get(reverse("membership:backoffice_quick_add")).status_code,
+            403,
+        )
+        self.assertEqual(
+            self.client.get(reverse("membership:backoffice_export_csv")).status_code,
+            403,
+        )
+        self.assertEqual(
+            self.client.post(
+                reverse(
+                    "membership:backoffice_update_payment_status",
+                    kwargs={"payment_id": payment.pk},
+                ),
+                {"status": PaymentRecord.Status.PAID},
+            ).status_code,
+            403,
+        )
+
+    def test_backoffice_member_list_search_filter_and_pagination(self):
+        for idx in range(11):
+            extra_user = User.objects.create_user(
+                username=f"extra_member_{idx}",
+                email=f"extra_{idx}@example.test",
+                password="StrongPassword123!",
+                first_name=f"Member{idx}",
+                last_name="Test",
+                role=User.Role.MEMBER,
+            )
+            MemberProfile.objects.create(
+                user=extra_user,
+                member_type=MemberProfile.MemberType.NON_HUNTER,
+                phone=f"+421900000{idx:03d}",
+                street_address="Hlavna 1",
+                city="Trnava",
+                postal_code="91701",
+                status=MemberProfile.Status.ACTIVE,
+            )
+
+        self.client.force_login(self.secretariat_user)
+
+        page_1 = self.client.get(reverse("membership:backoffice_member_list"))
+        self.assertEqual(page_1.status_code, 200)
+        self.assertEqual(len(page_1.context["page_obj"]), 10)
+        self.assertEqual(page_1.context["page_obj"].paginator.num_pages, 2)
+
+        page_2 = self.client.get(
+            reverse("membership:backoffice_member_list"), {"page": 2}
+        )
+        self.assertEqual(page_2.status_code, 200)
+        self.assertEqual(len(page_2.context["page_obj"]), 2)
+
+        filtered = self.client.get(
+            reverse("membership:backoffice_member_list"),
+            {
+                "q": "Nitra",
+                "status": MemberProfile.Status.APPLICANT,
+                "member_type": MemberProfile.MemberType.HUNTER,
+            },
+        )
+        self.assertEqual(filtered.status_code, 200)
+        self.assertEqual(len(filtered.context["page_obj"]), 1)
+        self.assertContains(filtered, "Lukas Bielik")
+
+    def test_secretariat_can_approve_application_and_manage_manual_payments(self):
+        self.client.force_login(self.secretariat_user)
+        detail_url = reverse(
+            "membership:backoffice_member_detail",
+            kwargs={"member_id": self.profile.pk},
+        )
+
+        # Approve application and set validity dates
+        approve_response = self.client.post(
+            detail_url,
+            {
+                "action": "update_status",
+                "status": MemberProfile.Status.ACTIVE,
+                "valid_from": "2026-11-19",
+                "valid_until": "2027-11-19",
+                "note": "Approved by secretariat.",
+            },
+        )
+        self.assertRedirects(approve_response, detail_url)
+
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.status, MemberProfile.Status.ACTIVE)
+        self.assertTrue(self.profile.member_number.startswith("HA-"))
+        self.assertEqual(self.profile.valid_from, date(2026, 11, 19))
+        self.assertEqual(self.profile.valid_until, date(2027, 11, 19))
+        history_entry = self.profile.status_history.first()
+        self.assertEqual(history_entry.changed_by, self.secretariat_user)
+
+        # Record a manual pending payment
+        payment_response = self.client.post(
+            detail_url,
+            {
+                "action": "record_payment",
+                "quote": self.quote.pk,
+                "status": PaymentRecord.Status.PENDING,
+                "amount": "85.00",
+                "currency": "EUR",
+                "reference": "VS-2026-0042",
+                "notes": "Awaiting bank transfer confirmation.",
+            },
+        )
+        self.assertRedirects(payment_response, detail_url)
+
+        payment = PaymentRecord.objects.get(member=self.profile)
+        self.assertEqual(payment.status, PaymentRecord.Status.PENDING)
+        self.assertEqual(payment.amount, Decimal("85.00"))
+        self.assertEqual(payment.reference, "VS-2026-0042")
+        self.assertEqual(payment.recorded_by, self.secretariat_user)
+        self.assertIsNone(payment.payment_date)
+
+        # Update manual payment status to paid (auto-populates payment_date)
+        update_response = self.client.post(
+            reverse(
+                "membership:backoffice_update_payment_status",
+                kwargs={"payment_id": payment.pk},
+            ),
+            {"status": PaymentRecord.Status.PAID},
+        )
+        self.assertRedirects(update_response, detail_url)
+
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, PaymentRecord.Status.PAID)
+        self.assertIsNotNone(payment.payment_date)
+        self.assertEqual(payment.recorded_by, self.secretariat_user)
+
+    def test_secretariat_quick_add_creates_member_profile_history_and_quote(self):
+        self.client.force_login(self.secretariat_user)
+        response = self.client.post(
+            reverse("membership:backoffice_quick_add"),
+            {
+                "username": "quick_demo_member",
+                "email": "quick_demo@example.test",
+                "first_name": "Martin",
+                "last_name": "Kral",
+                "member_type": MemberProfile.MemberType.HUNTER,
+                "status": MemberProfile.Status.ACTIVE,
+                "phone": "+421900222333",
+                "street_address": "Polna 8",
+                "city": "Nitra",
+                "postal_code": "94901",
+                "hunting_licence_number": "SK-NR-2026-900",
+                "licence_valid_until": "2028-01-31",
+                "insurance_valid_until": "2027-12-31",
+                "valid_from": "2026-11-19",
+                "valid_until": "2027-12-31",
+                "include_insurance": "on",
+            },
+        )
+
+        created_profile = MemberProfile.objects.get(
+            user__username="quick_demo_member"
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "membership:backoffice_member_detail",
+                kwargs={"member_id": created_profile.pk},
+            ),
+        )
+        self.assertEqual(created_profile.status, MemberProfile.Status.ACTIVE)
+        self.assertTrue(created_profile.member_number.startswith("HA-"))
+        self.assertEqual(created_profile.status_history.count(), 1)
+        self.assertEqual(created_profile.fee_quotes.count(), 1)
+        self.assertEqual(
+            created_profile.fee_quotes.first().total_amount,
+            Decimal("85.00"),
+        )
+
+    def test_secretariat_can_export_filtered_csv(self):
+        transition_member_status(
+            member=self.profile,
+            new_status=MemberProfile.Status.ACTIVE,
+            changed_by=self.secretariat_user,
+            valid_from=date(2026, 11, 19),
+            valid_until=date(2027, 12, 31),
+        )
+        PaymentRecord.objects.create(
+            member=self.profile,
+            quote=self.quote,
+            status=PaymentRecord.Status.PAID,
+            amount=Decimal("85.00"),
+            currency="EUR",
+            reference="CSV-REF-01",
+            payment_date=date(2026, 11, 19),
+            recorded_by=self.secretariat_user,
+        )
+
+        other_user = User.objects.create_user(
+            username="pending_applicant",
+            email="pending@example.test",
+            password="StrongPassword123!",
+            role=User.Role.MEMBER,
+        )
+        MemberProfile.objects.create(
+            user=other_user,
+            member_type=MemberProfile.MemberType.NON_HUNTER,
+            phone="+421900888777",
+            street_address="Nova 3",
+            city="Bratislava",
+            postal_code="81101",
+            status=MemberProfile.Status.APPLICANT,
+        )
+
+        self.client.force_login(self.secretariat_user)
+        response = self.client.get(
+            reverse("membership:backoffice_export_csv"),
+            {"status": MemberProfile.Status.ACTIVE},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response["Content-Type"].startswith("text/csv"))
+        self.assertIn('filename="members_export.csv"', response["Content-Disposition"])
+
+        rows = list(csv.DictReader(StringIO(response.content.decode("utf-8"))))
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["username"], "regular_member")
+        self.assertEqual(rows[0]["status"], "active")
+        self.assertEqual(rows[0]["valid_until"], "2027-12-31")
+        self.assertEqual(rows[0]["latest_payment_status"], "paid")

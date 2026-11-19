@@ -1,0 +1,32 @@
+{% extends "membership/base_membership.html" %}
+
+{% block title %}Quick-Add Member — Secretariat Back Office{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <h1 style="margin: 0;">Quick-Add Synthetic Member</h1>
+    <a href="{% url 'membership:backoffice_member_list' %}" class="btn btn-secondary">Back to Directory</a>
+  </div>
+  <p class="help-text">
+    Creates a synthetic member account, profile, initial lifecycle history entry, and frozen sample fee quote in one step.
+  </p>
+
+  <form method="post" action="{% url 'membership:backoffice_quick_add' %}" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="errorlist">{{ form.non_field_errors }}</div>{% endif %}
+
+    {% for field in form %}
+      <div class="form-row">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+        {% if field.errors %}{{ field.errors }}{% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="btn">Create Member & Generate Quote</button>
+    <a href="{% url 'membership:backoffice_member_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
