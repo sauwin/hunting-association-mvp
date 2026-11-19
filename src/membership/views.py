@@ -1,20 +1,40 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
-from .forms import FeeCalculatorPreviewForm, MembershipApplicationForm
-from .models import ConsentRecord, MemberProfile, MembershipStatusHistory
+from accounts.models import User
+from accounts.permissions import role_required
+
+from .forms import (
+    FeeCalculatorPreviewForm,
+    ManualPaymentForm,
+    MembershipApplicationForm,
+    MemberStatusUpdateForm,
+    SecretariatQuickAddMemberForm,
+)
+from .models import (
+    ConsentRecord,
+    MemberProfile,
+    MembershipStatusHistory,
+    PaymentRecord,
+)
 from .services import (
-     DEFAULT_CONSENT_TEXT,
+    DEFAULT_CONSENT_TEXT,
     DEFAULT_CONSENT_VERSION,
     DELETION_REQUEST_PROCEDURE_TEXT,
     calculate_fee_breakdown,
     create_frozen_fee_quote,
     get_active_fee_rule,
+    transition_member_status,
 )
 
 
@@ -314,4 +334,312 @@ def export_my_data(request: HttpRequest) -> JsonResponse:
     response["Content-Disposition"] = (
         f'attachment; filename="membership_data_{request.user.username}.json"'
     )
+    return response
+
+
+def _filter_member_queryset(request: HttpRequest):
+    """Apply shared search, status, and member_type filters for back-office list and CSV export."""
+    queryset = (
+        MemberProfile.objects.select_related("user")
+        .prefetch_related("payments")
+        .all()
+    )
+    search_query = (request.GET.get("q") or "").strip()
+    status_filter = (request.GET.get("status") or "").strip()
+    member_type_filter = (request.GET.get("member_type") or "").strip()
+
+    if search_query:
+        queryset = queryset.filter(
+            Q(member_number__icontains=search_query)
+            | Q(user__username__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(user__first_name__icontains=search_query)
+            | Q(user__last_name__icontains=search_query)
+            | Q(city__icontains=search_query)
+            | Q(phone__icontains=search_query)
+        )
+
+    valid_statuses = {choice[0] for choice in MemberProfile.Status.choices}
+    if status_filter in valid_statuses:
+        queryset = queryset.filter(status=status_filter)
+
+    valid_types = {choice[0] for choice in MemberProfile.MemberType.choices}
+    if member_type_filter in valid_types:
+        queryset = queryset.filter(member_type=member_type_filter)
+
+    return queryset, search_query, status_filter, member_type_filter
+
+
+@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)
+def backoffice_member_list(request: HttpRequest) -> HttpResponse:
+    """Searchable, filterable, and paginated member directory for secretariat staff."""
+    queryset, search_query, status_filter, member_type_filter = (
+        _filter_member_queryset(request)
+    )
+    paginator = Paginator(queryset, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "membership/backoffice/member_list.html",
+        {
+            "page_obj": page_obj,
+            "search_query": search_query,
+            "status_filter": status_filter,
+            "member_type_filter": member_type_filter,
+            "status_choices": MemberProfile.Status.choices,
+            "member_type_choices": MemberProfile.MemberType.choices,
+            "total_count": MemberProfile.objects.count(),
+            "applicant_count": MemberProfile.objects.filter(
+                status=MemberProfile.Status.APPLICANT
+            ).count(),
+            "active_count": MemberProfile.objects.filter(
+                status=MemberProfile.Status.ACTIVE
+            ).count(),
+        },
+    )
+
+
+@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)
+def backoffice_member_detail(
+    request: HttpRequest, member_id: int
+) -> HttpResponse:
+    """Secretariat member detail view for lifecycle approval/updates and manual payment recording."""
+    profile = get_object_or_404(
+        MemberProfile.objects.select_related("user"),
+        pk=member_id,
+    )
+
+    status_form = MemberStatusUpdateForm(
+        initial={
+            "status": profile.status,
+            "valid_from": profile.valid_from,
+            "valid_until": profile.valid_until,
+        }
+    )
+    payment_form = ManualPaymentForm(member=profile)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "update_status":
+            status_form = MemberStatusUpdateForm(request.POST)
+            if status_form.is_valid():
+                transition_member_status(
+                    member=profile,
+                    new_status=status_form.cleaned_data["status"],
+                    changed_by=request.user,
+                    valid_from=status_form.cleaned_data["valid_from"],
+                    valid_until=status_form.cleaned_data["valid_until"],
+                    note=status_form.cleaned_data["note"],
+                )
+                messages.success(
+                    request,
+                    f"Membership status updated to '{profile.get_status_display()}' "
+                    f"(Member ID: {profile.member_number or 'Pending'}).",
+                )
+                return redirect(
+                    "membership:backoffice_member_detail",
+                    member_id=profile.pk,
+                )
+
+        elif action == "record_payment":
+            payment_form = ManualPaymentForm(request.POST, member=profile)
+            if payment_form.is_valid():
+                payment = payment_form.save(commit=False)
+                payment.member = profile
+                payment.recorded_by = request.user
+                payment.save()
+                messages.success(
+                    request,
+                    f"Recorded {payment.get_status_display().lower()} payment of "
+                    f"{payment.amount} {payment.currency} (Ref: {payment.reference or '—'}).",
+                )
+                return redirect(
+                    "membership:backoffice_member_detail",
+                    member_id=profile.pk,
+                )
+
+    return render(
+        request,
+        "membership/backoffice/member_detail.html",
+        {
+            "profile": profile,
+            "status_form": status_form,
+            "payment_form": payment_form,
+            "quotes": profile.fee_quotes.all(),
+            "payments": profile.payments.select_related("quote", "recorded_by").all(),
+            "status_history": profile.status_history.select_related("changed_by").all(),
+            "consents": profile.user.consent_records.all(),
+            "payment_status_choices": PaymentRecord.Status.choices,
+        },
+    )
+
+
+@require_POST
+@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)
+def backoffice_update_payment_status(
+    request: HttpRequest, payment_id: int
+) -> HttpResponse:
+    """Update the manual status of an existing payment record with staff audit attribution."""
+    payment = get_object_or_404(
+        PaymentRecord.objects.select_related("member"),
+        pk=payment_id,
+    )
+    new_status = (request.POST.get("status") or "").strip()
+    valid_statuses = {choice[0] for choice in PaymentRecord.Status.choices}
+
+    if new_status not in valid_statuses:
+        messages.error(request, "Invalid payment status selected.")
+    else:
+        payment.status = new_status
+        payment.recorded_by = request.user
+        if new_status == PaymentRecord.Status.PAID and payment.payment_date is None:
+            payment.payment_date = timezone.localdate()
+        payment.save(update_fields=["status", "recorded_by", "payment_date", "updated_at"])
+        messages.success(
+            request,
+            f"Payment #{payment.pk} updated to {payment.get_status_display()}.",
+        )
+
+    return redirect(
+        "membership:backoffice_member_detail",
+        member_id=payment.member_id,
+    )
+
+
+@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)
+def backoffice_quick_add_member(request: HttpRequest) -> HttpResponse:
+    """Allow secretariat staff to quick-add a synthetic member, profile, and initial frozen quote."""
+    if request.method == "POST":
+        form = SecretariatQuickAddMemberForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=form.cleaned_data["username"],
+                    email=form.cleaned_data["email"],
+                    password=None,
+                    first_name=form.cleaned_data["first_name"].strip(),
+                    last_name=form.cleaned_data["last_name"].strip(),
+                    role=User.Role.MEMBER,
+                )
+                profile = MemberProfile.objects.create(
+                    user=user,
+                    member_type=form.cleaned_data["member_type"],
+                    phone=form.cleaned_data["phone"].strip(),
+                    street_address=form.cleaned_data["street_address"].strip(),
+                    city=form.cleaned_data["city"].strip(),
+                    postal_code=form.cleaned_data["postal_code"].strip(),
+                    hunting_licence_number=(
+                        form.cleaned_data["hunting_licence_number"] or ""
+                    ).strip(),
+                    licence_valid_until=form.cleaned_data["licence_valid_until"],
+                    insurance_valid_until=form.cleaned_data["insurance_valid_until"],
+                    status=MemberProfile.Status.APPLICANT,
+                    valid_from=form.cleaned_data["valid_from"],
+                    valid_until=form.cleaned_data["valid_until"],
+                )
+
+                initial_status = form.cleaned_data["status"]
+                if initial_status != MemberProfile.Status.APPLICANT:
+                    transition_member_status(
+                        member=profile,
+                        new_status=initial_status,
+                        changed_by=request.user,
+                        valid_from=form.cleaned_data["valid_from"],
+                        valid_until=form.cleaned_data["valid_until"],
+                        note="Quick-added by secretariat.",
+                    )
+                else:
+                    MembershipStatusHistory.objects.create(
+                        member=profile,
+                        previous_status="",
+                        new_status=MemberProfile.Status.APPLICANT,
+                        changed_by=request.user,
+                        note="Quick-added by secretariat.",
+                    )
+
+                create_frozen_fee_quote(
+                    member=profile,
+                    include_insurance=form.cleaned_data["include_insurance"],
+                    apply_reduced_rate=form.cleaned_data["apply_reduced_rate"],
+                    fee_rule=get_active_fee_rule(),
+                )
+
+            messages.success(
+                request,
+                f"Member '{user.username}' created with status '{profile.get_status_display()}'.",
+            )
+            return redirect(
+                "membership:backoffice_member_detail",
+                member_id=profile.pk,
+            )
+    else:
+        form = SecretariatQuickAddMemberForm()
+
+    return render(
+        request,
+        "membership/backoffice/quick_add.html",
+        {"form": form},
+    )
+
+
+@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)
+def backoffice_export_csv(request: HttpRequest) -> HttpResponse:
+    """Export the filtered member directory as a basic CSV file for secretariat administration."""
+    queryset, _, _, _ = _filter_member_queryset(request)
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="members_export.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "member_number",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "member_type",
+            "status",
+            "valid_from",
+            "valid_until",
+            "phone",
+            "city",
+            "licence_valid_until",
+            "insurance_valid_until",
+            "latest_payment_status",
+        ]
+    )
+
+    for profile in queryset:
+        payments = list(profile.payments.all())
+        latest_payment_status = payments[0].status if payments else ""
+        writer.writerow(
+            [
+                profile.member_number or "",
+                profile.user.username,
+                profile.user.first_name,
+                profile.user.last_name,
+                profile.user.email,
+                profile.member_type,
+                profile.status,
+                profile.valid_from.isoformat() if profile.valid_from else "",
+                profile.valid_until.isoformat() if profile.valid_until else "",
+                profile.phone,
+                profile.city,
+                (
+                    profile.licence_valid_until.isoformat()
+                    if profile.licence_valid_until
+                    else ""
+                ),
+                (
+                    profile.insurance_valid_until.isoformat()
+                    if profile.insurance_valid_until
+                    else ""
+                ),
+                latest_payment_status,
+            ]
+        )
+
     return response

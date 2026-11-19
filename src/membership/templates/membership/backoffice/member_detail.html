@@ -1,0 +1,189 @@
+{% extends "membership/base_membership.html" %}
+
+{% block title %}Manage Member — {{ profile.user.username }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="margin: 0;">{{ profile.user.first_name }} {{ profile.user.last_name }} ({{ profile.user.username }})</h1>
+      <p style="margin: 0.25rem 0 0 0; color: #4b5563;">
+        Member ID: <strong><code>{{ profile.member_number|default:"Pending approval" }}</code></strong> |
+        Status: <strong>{{ profile.get_status_display }}</strong>
+      </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'membership:member_card_detail' profile.pk %}" class="btn btn-secondary">View Digital Card</a>
+      <a href="{% url 'membership:backoffice_member_list' %}" class="btn btn-secondary">Back to Directory</a>
+    </div>
+  </div>
+
+  <table>
+    <tbody>
+      <tr>
+        <th>Email & Phone</th>
+        <td>{{ profile.user.email }} · {{ profile.phone }}</td>
+        <th>Category</th>
+        <td>{{ profile.get_member_type_display }}</td>
+      </tr>
+      <tr>
+        <th>Address</th>
+        <td>{{ profile.street_address }}, {{ profile.postal_code }} {{ profile.city }}</td>
+        <th>Membership Validity</th>
+        <td>{{ profile.valid_from|date:"Y-m-d"|default:"—" }} to {{ profile.valid_until|date:"Y-m-d"|default:"—" }}</td>
+      </tr>
+      <tr>
+        <th>Hunting Licence</th>
+        <td>
+          {{ profile.hunting_licence_number|default:"Not provided" }}
+          {% if profile.licence_valid_until %}(until {{ profile.licence_valid_until|date:"Y-m-d" }}){% endif %}
+        </td>
+        <th>Insurance Valid Until</th>
+        <td>{{ profile.insurance_valid_until|date:"Y-m-d"|default:"Not provided" }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Approve / Update Lifecycle Status</h2>
+    <form method="post" action="{% url 'membership:backoffice_member_detail' profile.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_status">
+      {% if status_form.non_field_errors %}{{ status_form.non_field_errors }}{% endif %}
+      {% for field in status_form %}
+        <div class="form-row">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+          {% if field.errors %}{{ field.errors }}{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Save Status & Validity Dates</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Record Manual Payment</h2>
+    <p class="help-text">Manual MVP payment tracking only — no live payment gateway connected.</p>
+    <form method="post" action="{% url 'membership:backoffice_member_detail' profile.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="record_payment">
+      {% if payment_form.non_field_errors %}{{ payment_form.non_field_errors }}{% endif %}
+      {% for field in payment_form %}
+        <div class="form-row">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.errors %}{{ field.errors }}{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Record Payment</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Payment Audit Trail</h2>
+  {% if payments %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Amount</th>
+          <th>Quote</th>
+          <th>Reference</th>
+          <th>Payment Date</th>
+          <th>Recorded By</th>
+          <th>Notes</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in payments %}
+          <tr>
+            <td>#{{ payment.pk }}</td>
+            <td><strong>{{ payment.amount }} {{ payment.currency }}</strong></td>
+            <td>{% if payment.quote %}#{{ payment.quote.pk }} ({{ payment.quote.rule_version_snapshot }}){% else %}—{% endif %}</td>
+            <td><code>{{ payment.reference|default:"—" }}</code></td>
+            <td>{{ payment.payment_date|date:"Y-m-d"|default:"—" }}</td>
+            <td>{{ payment.recorded_by.username|default:"—" }}</td>
+            <td>{{ payment.notes|default:"—" }}</td>
+            <td>
+              <form method="post" action="{% url 'membership:backoffice_update_payment_status' payment.pk %}" style="display: flex; gap: 0.4rem; align-items: center;">
+                {% csrf_token %}
+                <select name="status" aria-label="Payment #{{ payment.pk }} status" style="padding: 0.25rem;">
+                  {% for value, label in payment_status_choices %}
+                    <option value="{{ value }}" {% if payment.status == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm">Update</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No payments recorded for this member yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Frozen Fee Quotes</h2>
+  {% if quotes %}
+    <table>
+      <thead>
+        <tr>
+          <th>Quote #</th>
+          <th>Rule Version</th>
+          <th>Category</th>
+          <th>Total</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in quotes %}
+          <tr>
+            <td>#{{ q.pk }}</td>
+            <td><code>{{ q.rule_version_snapshot }}</code></td>
+            <td>{{ q.member_type_snapshot }}</td>
+            <td><strong>{{ q.total_amount }} {{ q.currency }}</strong></td>
+            <td>{{ q.created_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No fee quotes found.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Lifecycle Status History</h2>
+  {% if status_history %}
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Transition</th>
+          <th>Changed By</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in status_history %}
+          <tr>
+            <td>{{ entry.changed_at|date:"Y-m-d H:i" }}</td>
+            <td><code>{{ entry.previous_status|default:"none" }}</code> → <strong>{{ entry.new_status }}</strong></td>
+            <td>{{ entry.changed_by.username|default:"—" }}</td>
+            <td>{{ entry.note }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No status history entries recorded yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

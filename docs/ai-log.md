@@ -102,3 +102,12 @@
 - **Verification & Human Changes:**
   - Verified `/membership/my-card/` and `/membership/my-application/` in the browser, confirming print styles and HTML download header.
   - Ran `docker compose exec web python manage.py test membership` and confirmed all 11 tests pass, including verification that the digital card excludes private fields (phone, address, licence number) and blocks cross-member access with HTTP 403.
+
+## Entry 10 — Secretariat Back Office, Manual Payment Recording, Quick-Add & CSV Export
+- **Date:** 2026-11-19
+- **Task / Issue:** Implement role-protected secretariat back office with searchable/paginated member directory, application approval and validity dates management, synthetic member quick-add, manual payment tracking (`pending`, `paid`, `overdue`, `cancelled`), CSV export, and automated tests (Student A scope, Issue #14).
+- **Prompt Summary:** Asked AI to build secretariat forms (`MemberStatusUpdateForm`, `ManualPaymentForm`, `SecretariatQuickAddMemberForm`), protect back-office views with `@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)`, create templates under `src/membership/templates/membership/backoffice/`, and add end-to-end role-isolation, payment audit, and CSV export tests.
+- **AI Output:** Updated `src/membership/forms.py`, `src/membership/views.py`, `src/membership/urls.py`, `src/membership/templates/membership/base_membership.html`, created 3 back-office HTML templates, and added `SecretariatBackOfficeTests` in `src/membership/tests.py`.
+- **Verification & Human Changes:**
+  - Verified `/membership/backoffice/`, member detail approval/payment forms, quick-add workflow, and filtered CSV download in the browser.
+  - Ran `docker compose exec web python manage.py test membership` and verified all 16 tests pass, confirming regular `member` accounts receive HTTP 403 on all secretariat endpoints.
