@@ -114,9 +114,17 @@
         <p class="text-stone-600 max-w-xl mx-auto mb-6">
             Prejdite priamo do nášho online portálu, vytvorte si účet a odošlite žiadosť o členstvo na pár kliknutí.
         </p>
-        <a href="{{ membership_register_url }}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3.5 rounded-md font-bold text-lg transition shadow-md">
-            Prejsť na registráciu člena &rarr;
-        </a>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{{ membership_register_url }}" class="w-full sm:w-auto inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3.5 rounded-md font-bold text-lg transition shadow-md">
+                Prejsť na registráciu člena →
+            </a>
+            <a href="{{ membership_calculator_url|default:'/membership/calculator/' }}" class="w-full sm:w-auto inline-block bg-forest-50 hover:bg-forest-100 text-forest-800 border border-forest-600/30 px-6 py-3.5 rounded-md font-semibold text-base transition">
+                Kalkulačka poplatkov
+            </a>
+        </div>
+        <p class="text-sm text-stone-500 mt-5">
+            Potrebujete sa najskôr poradiť? <a href="{% url 'public_site:membership_interest' %}" class="text-forest-700 hover:text-forest-900 font-semibold underline">Vyplňte nezáväzný dopyt o členstvo</a>.
+        </p>
     </div>
 </section>
 {% endblock %}

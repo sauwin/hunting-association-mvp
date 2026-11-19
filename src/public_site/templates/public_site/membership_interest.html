@@ -1,0 +1,187 @@
+{% extends "public_site/base.html" %}
+
+{% block title %}Záujem o členstvo | Poľovnícka Asociácia Slovenska{% endblock %}
+{% block meta_description %}Máte otázky k členstvu alebo si chcete overiť podmienky vstupu? Vyplňte nezáväzný dopyt alebo prejdite priamo k online registrácii.{% endblock %}
+
+{% block content %}
+<section class="bg-forest-800 text-white py-14 border-b border-forest-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <span class="inline-block bg-forest-700 text-amber-400 text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            Vstup do asociácie
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            Nezáväzný záujem o členstvo
+        </h1>
+        <p class="text-stone-300 max-w-2xl text-base sm:text-lg leading-relaxed">
+            Chcete sa najskôr poradiť o vhodnej kategórii členstva, poplatkoch alebo prípravnom kurze? Zanechajte nám dopyt a sekretariát sa vám ozve.
+        </p>
+    </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    {% if messages %}
+        <div class="mb-8 space-y-3">
+            {% for message in messages %}
+                <div class="rounded-xl bg-forest-50 border border-forest-600/30 p-4 text-forest-900 flex items-start gap-3 shadow-sm">
+                    <svg class="w-5 h-5 text-forest-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <p class="text-sm font-medium">{{ message }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <!-- Left/Main Column: Pre-registration Enquiry Form -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-10">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">Máte otázku pred podaním prihlášky?</h2>
+                <p class="text-sm text-stone-600">
+                    Vyplňte krátky formulár. Vaše údaje zostávajú neverejné a slúžia výhradne na komunikáciu so sekretariátom komory.
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'public_site:membership_interest' %}" novalidate class="space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {# Honeypot anti-spam field #}
+                <div class="hidden" aria-hidden="true">
+                    <label for="{{ form.website.id_for_label }}">Website</label>
+                    {{ form.website }}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.full_name.id_for_label }}" class="block text-sm font-semibold text-stone-700 mb-1.5">
+                            {{ form.full_name.label }} <span class="text-red-600">*</span>
+                        </label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                            <p class="mt-1 text-xs text-red-600">{{ form.full_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.region.id_for_label }}" class="block text-sm font-semibold text-stone-700 mb-1.5">
+                            {{ form.region.label }} <span class="text-red-600">*</span>
+                        </label>
+                        {{ form.region }}
+                        {% if form.region.errors %}
+                            <p class="mt-1 text-xs text-red-600">{{ form.region.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-semibold text-stone-700 mb-1.5">
+                            {{ form.email.label }} <span class="text-red-600">*</span>
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.phone.id_for_label }}" class="block text-sm font-semibold text-stone-700 mb-1.5">
+                            {{ form.phone.label }}
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <p class="mt-1 text-xs text-red-600">{{ form.phone.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
+                    <div>
+                        <label for="{{ form.preferred_membership_type.id_for_label }}" class="block text-sm font-semibold text-stone-700 mb-1.5">
+                            {{ form.preferred_membership_type.label }} <span class="text-red-600">*</span>
+                        </label>
+                        {{ form.preferred_membership_type }}
+                        {% if form.preferred_membership_type.errors %}
+                            <p class="mt-1 text-xs text-red-600">{{ form.preferred_membership_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="pb-2">
+                        <label for="{{ form.has_hunting_licence.id_for_label }}" class="inline-flex items-center gap-2.5 cursor-pointer text-sm font-medium text-stone-700">
+                            {{ form.has_hunting_licence }}
+                            <span>{{ form.has_hunting_licence.label }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.message.id_for_label }}" class="block text-sm font-semibold text-stone-700 mb-1.5">
+                        {{ form.message.label }} <span class="text-red-600">*</span>
+                    </label>
+                    {{ form.message }}
+                    {% if form.message.errors %}
+                        <p class="mt-1 text-xs text-red-600">{{ form.message.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="bg-stone-50 rounded-xl p-4 border border-stone-200">
+                    <div class="flex items-start gap-3">
+                        <div class="flex items-center h-5 mt-0.5">
+                            {{ form.consent_given }}
+                        </div>
+                        <label for="{{ form.consent_given.id_for_label }}" class="text-sm text-stone-700 leading-relaxed">
+                            {{ form.consent_given.label }} <span class="text-red-600">*</span>
+                        </label>
+                    </div>
+                    {% if form.consent_given.errors %}
+                        <p class="mt-2 text-xs text-red-600 font-medium">{{ form.consent_given.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                    <button type="submit" class="bg-forest-700 hover:bg-forest-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition cursor-pointer">
+                        Odoslať nezáväzný dopyt
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Column: Clear Single Path to Student A's Real Registration Flow -->
+        <aside class="space-y-6">
+            <div class="bg-forest-900 text-white rounded-2xl p-6 sm:p-7 shadow-md border border-forest-700">
+                <span class="inline-block bg-amber-600 text-white text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded mb-3">
+                    Priama registrácia
+                </span>
+                <h3 class="text-xl font-bold mb-3">Ste pripravení podať riadnu žiadosť?</h3>
+                <p class="text-stone-300 text-sm leading-relaxed mb-6">
+                    Ak už poznáte podmienky členstva, prejdite priamo do členského portálu. Vytvorte si účet alebo podajte online prihlášku.
+                </p>
+                <div class="space-y-3">
+                    <a href="{{ membership_apply_url }}" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-3 rounded-lg transition shadow-sm">
+                        Podať online prihlášku →
+                    </a>
+                    <a href="{{ account_register_url }}" class="block w-full text-center bg-forest-700 hover:bg-forest-600 text-white font-semibold text-sm px-4 py-2.5 rounded-lg border border-forest-600 transition">
+                        Vytvoriť členský účet
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm">
+                <h4 class="font-bold text-stone-900 mb-2 text-base">Výpočet členského príspevku</h4>
+                <p class="text-stone-600 text-sm leading-relaxed mb-4">
+                    Overte si orientačnú výšku ročného poplatku podľa kategórie členstva v našej kalkulačke.
+                </p>
+                <a href="{{ membership_calculator_url }}" class="inline-flex items-center text-sm font-semibold text-forest-700 hover:text-forest-900">
+                    Otvoriť kalkulačku poplatkov →
+                </a>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

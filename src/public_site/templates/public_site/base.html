@@ -116,9 +116,14 @@
                 <p class="text-sm text-stone-400 mb-4">
                     Chcete sa stať súčasťou našej komunity? Podajte si prihlášku online.
                 </p>
-                <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="inline-block bg-forest-600 hover:bg-forest-700 text-white text-sm px-4 py-2 rounded font-medium transition">
-                    Registrácia online →
-                </a>
+                <div class="flex flex-col items-start gap-2.5">
+                    <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="inline-block bg-forest-600 hover:bg-forest-700 text-white text-sm px-4 py-2 rounded font-medium transition">
+                        Registrácia online →
+                    </a>
+                    <a href="{% url 'public_site:membership_interest' %}" class="text-xs text-stone-300 hover:text-white underline transition">
+                        Nezáväzný dopyt k členstvu
+                    </a>
+                </div>
             </div>
         </div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-forest-800 text-xs text-stone-500 text-center">
