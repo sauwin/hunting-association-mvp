@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import NoReverseMatch, reverse
 
@@ -215,3 +215,49 @@ def membership_interest_view(request):
         **get_student_a_handoff_context(),
     }
     return render(request, "public_site/membership_interest.html", context)
+
+def robots_txt_view(request):
+    sitemap_url = request.build_absolute_uri(reverse("public_site:sitemap_xml"))
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin/",
+        "Disallow: /membership/backoffice/",
+        f"Sitemap: {sitemap_url}",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain; charset=utf-8")
+
+
+def sitemap_xml_view(request):
+    static_route_names = [
+        "public_site:home",
+        "public_site:about",
+        "public_site:how_to_join",
+        "public_site:faq",
+        "public_site:article_list",
+        "public_site:representatives",
+        "public_site:volunteer",
+        "public_site:membership_interest",
+    ]
+    url_entries = []
+    for route_name in static_route_names:
+        loc = request.build_absolute_uri(reverse(route_name))
+        url_entries.append(
+            f"  <url>\n    <loc>{loc}</loc>\n    <changefreq>weekly</changefreq>\n  </url>"
+        )
+
+    published_articles = Article.objects.filter(status=Article.Status.PUBLISHED)
+    for article in published_articles:
+        loc = request.build_absolute_uri(article.get_absolute_url())
+        lastmod = (article.updated_at or article.published_at).strftime("%Y-%m-%d")
+        url_entries.append(
+            f"  <url>\n    <loc>{loc}</loc>\n    <lastmod>{lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n  </url>"
+        )
+
+    xml_content = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(url_entries)
+        + "\n</urlset>"
+    )
+    return HttpResponse(xml_content, content_type="application/xml; charset=utf-8")
