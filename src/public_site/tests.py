@@ -355,3 +355,69 @@ class MembershipInterestAndStudentAIntegrationTest(TestCase):
         response = self.client.post(url, data=payload)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(MembershipEnquiry.objects.count(), 0)
+
+class SeoAccessibilityAndShareTest(TestCase):
+    def setUp(self):
+        self.category = Category.objects.create(
+            name="Legislatíva",
+            slug="legislativa",
+        )
+        self.published_article = Article.objects.create(
+            category=self.category,
+            title="Novela zákona o poľovníctve 2026",
+            slug="novela-zakona-o-polovnictve-2026",
+            summary="Prehľad dôležitých zmien pre členov komory.",
+            body="Podrobný rozbor legislatívnych zmien.",
+            author_byline="JUDr. Peter Varga",
+            cover_image="https://example.com/images/cover.jpg",
+            status=Article.Status.PUBLISHED,
+        )
+        self.draft_article = Article.objects.create(
+            category=self.category,
+            title="Nezverejnený interný návrh",
+            slug="nezverejneny-interny-navrh",
+            summary="Koncept článku.",
+            body="Interný text.",
+            author_byline="Redakcia SPK",
+            status=Article.Status.DRAFT,
+        )
+
+    def test_robots_txt_endpoint(self):
+        """Verify /robots.txt returns 200 text/plain with sitemap reference."""
+        response = self.client.get(reverse("public_site:robots_txt"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/plain", response["Content-Type"])
+        self.assertContains(response, "User-agent: *")
+        self.assertContains(response, "Disallow: /admin/")
+        self.assertContains(response, "/sitemap.xml")
+
+    def test_sitemap_xml_includes_public_pages_and_published_articles_only(self):
+        """Verify /sitemap.xml lists public routes and published articles, excluding drafts."""
+        response = self.client.get(reverse("public_site:sitemap_xml"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("application/xml", response["Content-Type"])
+        self.assertContains(response, reverse("public_site:home"))
+        self.assertContains(response, reverse("public_site:membership_interest"))
+        self.assertContains(response, self.published_article.get_absolute_url())
+        self.assertNotContains(response, self.draft_article.get_absolute_url())
+
+    def test_article_detail_open_graph_and_share_controls(self):
+        """Verify article detail renders Open Graph metadata and social share controls."""
+        response = self.client.get(self.published_article.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'property="og:type" content="article"')
+        self.assertContains(response, self.published_article.title)
+        self.assertContains(response, 'property="og:image" content="https://example.com/images/cover.jpg"')
+        self.assertContains(response, "facebook.com/sharer/sharer.php")
+        self.assertContains(response, "linkedin.com/sharing/share-offsite/")
+        self.assertContains(response, "copy-article-link-btn")
+
+    def test_accessibility_skip_link_and_association_social_links(self):
+        """Verify skip-to-content accessibility link and footer social media channels exist."""
+        response = self.client.get(reverse("public_site:home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="#main-content"')
+        self.assertContains(response, 'id="main-content"')
+        self.assertContains(response, 'aria-label="Facebook Slovenskej poľovníckej komory"')
+        self.assertContains(response, 'aria-label="Instagram Slovenskej poľovníckej komory"')
+        self.assertContains(response, 'aria-label="YouTube kanál Slovenskej poľovníckej komory"')
