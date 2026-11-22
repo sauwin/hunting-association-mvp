@@ -149,3 +149,53 @@ class VolunteerEnquiry(models.Model):
 
     def __str__(self) -> str:
         return f"{self.full_name} – {self.region} ({self.get_status_display()})"
+
+class MembershipEnquiry(models.Model):
+    class MembershipType(models.TextChoices):
+        REGULAR = "REGULAR", "Riadne členstvo (držiteľ poľovného lístka)"
+        CANDIDATE = "CANDIDATE", "Uchádzač o prvý poľovný lístok"
+        YOUTH = "YOUTH", "Mládež / študent"
+        SUPPORTER = "SUPPORTER", "Pridružený podporovateľ"
+
+    class Status(models.TextChoices):
+        NEW = "NEW", "New"
+        CONTACTED = "CONTACTED", "Contacted"
+        CONVERTED = "CONVERTED", "Converted to Applicant"
+        CLOSED = "CLOSED", "Closed"
+
+    full_name = models.CharField(max_length=150, verbose_name="Meno a priezvisko")
+    email = models.EmailField(verbose_name="E-mailová adresa")
+    phone = models.CharField(max_length=40, blank=True, verbose_name="Telefónne číslo")
+    region = models.CharField(max_length=120, verbose_name="Kraj / Okres")
+    preferred_membership_type = models.CharField(
+        max_length=20,
+        choices=MembershipType.choices,
+        default=MembershipType.REGULAR,
+        verbose_name="Preferovaný typ členstva",
+    )
+    has_hunting_licence = models.BooleanField(
+        default=False,
+        verbose_name="Už vlastním poľovný lístok",
+    )
+    message = models.TextField(verbose_name="Vaša otázka alebo poznámka")
+    consent_given = models.BooleanField(
+        default=False,
+        verbose_name="Súhlas so spracovaním osobných údajov",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.NEW,
+        verbose_name="Stav dopytu",
+    )
+    staff_notes = models.TextField(blank=True, verbose_name="Interná poznámka")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Membership Enquiry"
+        verbose_name_plural = "Membership Enquiries"
+
+    def __str__(self) -> str:
+        return f"{self.full_name} ({self.get_preferred_membership_type_display()}) – {self.get_status_display()}"
