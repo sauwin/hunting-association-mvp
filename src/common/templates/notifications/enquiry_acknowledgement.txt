@@ -1,0 +1,7 @@
+Hello {{ sender_name|default:"Visitor" }},
+
+Thank you for contacting the Hunting Association MVP.
+We have recorded your {{ enquiry_type|default:"general" }} enquiry{% if region %} for region {{ region }}{% endif %} and our team will follow up accordingly.
+
+---
+SYNTHETIC DEMO NOTICE — Placeholder notification template (no live SMTP delivery).

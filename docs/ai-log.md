@@ -116,7 +116,7 @@
   - Adapted and styled the Slovak templates (`representatives.html`, `volunteer.html`) and updated global navigation links in `base.html` to match the existing association design system.
   - Created the synthetic Slovak seed command (`seed_representatives.py`), verified region filtering and private enquiry handling in the browser and admin panel inside Docker Compose, and verified all 13 unit tests pass via `python manage.py test public_site`.
 
-## Entry 10 — Secretariat Back Office, Manual Payment Recording, Quick-Add & CSV Export
+## Entry 11 — Secretariat Back Office, Manual Payment Recording, Quick-Add & CSV Export
 - **Date:** 2026-11-19
 - **Task / Issue:** Implement role-protected secretariat back office with searchable/paginated member directory, application approval and validity dates management, synthetic member quick-add, manual payment tracking (`pending`, `paid`, `overdue`, `cancelled`), CSV export, and automated tests (Student A scope, Issue #14).
 - **Prompt Summary:** Asked AI to build secretariat forms (`MemberStatusUpdateForm`, `ManualPaymentForm`, `SecretariatQuickAddMemberForm`), protect back-office views with `@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)`, create templates under `src/membership/templates/membership/backoffice/`, and add end-to-end role-isolation, payment audit, and CSV export tests.
@@ -125,7 +125,7 @@
   - Verified `/membership/backoffice/`, member detail approval/payment forms, quick-add workflow, and filtered CSV download in the browser.
   - Ran `docker compose exec web python manage.py test membership` and verified all 16 tests pass, confirming regular `member` accounts receive HTTP 403 on all secretariat endpoints.
 
-## Entry 11 — Membership Interest Enquiry & Student A Registration Integration
+## Entry 12 — Membership Interest Enquiry & Student A Registration Integration
 - **Date:** 2026-11-19
 - **Task / Issue:** Implement Block 5 (`MembershipEnquiry` model and migration, Django Admin workflow, `MembershipEnquiryForm` with consent and honeypot protection, `/membership-interest/` view and template, unified handoff links into Student A's registration/application flow, and integration tests) (`public_site` app, Student B scope, Issue #27).
 - **Prompt Summary:** Consulted AI on structuring pre-registration membership enquiry fields and verifying seamless URL handoff integration with Student A's `accounts` and `membership` endpoints.
@@ -136,7 +136,7 @@
   - Built and styled `membership_interest.html` and updated `how_to_join.html` and `base.html` to provide a clear, unified handoff path into Student A's `/membership/apply/`, `/accounts/register/`, and `/membership/calculator/` routes.
   - Executed `docker compose exec web python manage.py test public_site` and confirmed all 18 unit and integration tests pass.
 
-## Entry 12 — Responsive Polish, Accessibility, SEO & Social Share Links
+## Entry 13 — Responsive Polish, Accessibility, SEO & Social Share Links
 - **Date:** 2026-11-22
 - **Task / Issue:** Implement Block 6 (`robots.txt`, dynamic `sitemap.xml`, Open Graph social sharing metadata, association social channel links, article copy-link share control, keyboard skip-to-content navigation, ARIA attributes, and automated tests) (`public_site` app, Student B scope, Issue #YY).
 - **Prompt Summary:** Consulted AI on structuring dynamic XML sitemaps in Django, Open Graph meta tag blocks across templates, and WCAG-friendly skip-to-content and ARIA attributes.
@@ -145,3 +145,12 @@
   - Implemented `robots_txt_view` and `sitemap_xml_view` in `src/public_site/views.py` and wired `/robots.txt` and `/sitemap.xml` in `src/public_site/urls.py`, verifying that unpublished draft articles are strictly excluded from the sitemap.
   - Updated `src/public_site/templates/public_site/base.html` and `article_detail.html` with Open Graph tags, association social links (without third-party API dependencies), a one-click article link copy button, and keyboard accessibility enhancements (`#main-content` skip link, `aria-expanded` toggle, focus-visible rings).
   - Verified `/robots.txt` and `/sitemap.xml` in the browser and ran `docker compose exec web python manage.py test public_site` confirming all 22 unit and integration tests pass.
+
+  ## Entry 14 — Eligibility Contract API/Function, Shared Notification Stub & Renewal Reminder Command
+- **Date:** 2026-11-23
+- **Task / Issue:** Implement `check_eligibility` service and protected `/membership/api/eligibility/` JSON endpoint matching `docs/contracts.md`, build shared `common.notifications.send` stub with templates and safe console email backend, add `send_renewal_reminders` management command, document ADR-0007, and add contract/unit tests (Student A scope, Issue #25).
+- **Prompt Summary:** Asked AI to implement `check_eligibility(user_or_email, target_date)` and `/membership/api/eligibility/` with RBAC checks, create `src/common/notifications.py` with templates for `application_received`, `renewal_reminder`, and `enquiry_acknowledgement`, implement `send_renewal_reminders` CLI command with `--days`/`--date`/`--dry-run`, write ADR-0007, and add automated contract tests.
+- **AI Output:** Updated `src/membership/services.py`, `src/membership/views.py`, `src/membership/urls.py`, `src/config/settings.py`, `src/membership/tests.py`, created `src/common/notifications.py`, 3 notification templates, `send_renewal_reminders.py`, and `docs/adr/0007-eligibility-contract-and-notification-stub.md`.
+- **Verification & Human Changes:**
+  - Verified `docker compose exec web python manage.py send_renewal_reminders --days 60 --dry-run` and regular dispatch via console email backend.
+  - Ran `docker compose exec web python manage.py test` across all modules (`accounts`, `membership`, `public_site`) and verified all tests pass, including all 3 synthetic contract examples from `docs/contracts.md`, RBAC 401/403 enforcement, and renewal command filtering.

@@ -1,0 +1,23 @@
+  docs/membership-er-model[m
+  feat/10-auth-flow[m
+  feat/11-membership-models-and-fees[m
+  feat/12-membership-application-and-export[m
+  feat/16-membership-application-and-export[m
+  feat/20-member-lifecycle-and-card[m
+  feat/22-secretariat-backoffice-payments-csv[m
+* [32mfeat/25-eligibility-contract-and-notifications[m
+  feat/9-rbac-permissions[m
+  feat/initial-docker-django-setup[m
+  main[m
+  [31mremotes/origin/HEAD[m -> origin/main
+  [31mremotes/origin/docs/3-discovery-and-models[m
+  [31mremotes/origin/docs/membership-er-model[m
+  [31mremotes/origin/feat/10-auth-flow[m
+  [31mremotes/origin/feat/11-membership-models-and-fees[m
+  [31mremotes/origin/feat/12-membership-application-and-export[m
+  [31mremotes/origin/feat/20-member-lifecycle-and-card[m
+  [31mremotes/origin/feat/22-secretariat-backoffice-payments-csv[m
+  [31mremotes/origin/feat/8-homepage-and-core-pages[m
+  [31mremotes/origin/feat/9-rbac-permissions[m
+  [31mremotes/origin/feat/initial-docker-django-setup[m
+  [31mremotes/origin/main[m

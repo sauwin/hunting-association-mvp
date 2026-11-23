@@ -4,6 +4,8 @@ from typing import Any
 
 from django.db import transaction
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 from .models import FeeQuote, FeeRule, MemberProfile, MembershipStatusHistory
 
@@ -169,3 +171,80 @@ def transition_member_status(
         )
 
     return member
+
+def _parse_target_date(target_date: date | str | None) -> date:
+    if target_date is None:
+        return timezone.localdate()
+    if isinstance(target_date, str):
+        return date.fromisoformat(target_date)
+    return target_date
+
+
+def _resolve_member_profile(user_or_email: Any) -> MemberProfile | None:
+    if user_or_email is None:
+        return None
+    if isinstance(user_or_email, MemberProfile):
+        return user_or_email
+
+    user_model = get_user_model()
+    if isinstance(user_or_email, user_model):
+        return (
+            MemberProfile.objects.select_related("user")
+            .filter(user=user_or_email)
+            .first()
+        )
+
+    identifier = str(user_or_email).strip()
+    if not identifier:
+        return None
+
+    return (
+        MemberProfile.objects.select_related("user")
+        .filter(
+            Q(user__email__iexact=identifier)
+            | Q(user__username__iexact=identifier)
+            | Q(member_number__iexact=identifier)
+        )
+        .first()
+    )
+
+
+def check_eligibility(
+    user_or_email: Any,
+    target_date: date | str | None = None,
+) -> dict[str, Any]:
+    """
+    Verify membership active status, hunting licence validity, and insurance validity
+    for a target date (contract defined in docs/contracts.md).
+    """
+    check_date = _parse_target_date(target_date)
+    profile = _resolve_member_profile(user_or_email)
+
+    if profile is None:
+        return {
+            "active": False,
+            "licenceValid": False,
+            "insuranceValid": False,
+            "validUntil": None,
+        }
+
+    is_active = (
+        profile.status == MemberProfile.Status.ACTIVE
+        and profile.valid_until is not None
+        and (profile.valid_from is None or profile.valid_from <= check_date)
+        and check_date <= profile.valid_until
+    )
+    licence_valid = bool(
+        profile.licence_valid_until and profile.licence_valid_until >= check_date
+    )
+    insurance_valid = bool(
+        profile.insurance_valid_until and profile.insurance_valid_until >= check_date
+    )
+    valid_until = profile.valid_until.isoformat() if profile.valid_until else None
+
+    return {
+        "active": is_active,
+        "licenceValid": licence_valid,
+        "insuranceValid": insurance_valid,
+        "validUntil": valid_until,
+    }

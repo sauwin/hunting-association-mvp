@@ -10,6 +10,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from datetime import date
 
 from accounts.models import User
 from accounts.permissions import role_required
@@ -32,6 +33,7 @@ from .services import (
     DEFAULT_CONSENT_VERSION,
     DELETION_REQUEST_PROCEDURE_TEXT,
     calculate_fee_breakdown,
+    check_eligibility,
     create_frozen_fee_quote,
     get_active_fee_rule,
     transition_member_status,
@@ -643,3 +645,57 @@ def backoffice_export_csv(request: HttpRequest) -> HttpResponse:
         )
 
     return response
+
+def eligibility_api_view(request: HttpRequest) -> JsonResponse:
+    """
+    Protected JSON API endpoint for the Student A -> Student B eligibility contract.
+
+    Query parameters:
+    - date (optional): ISO date YYYY-MM-DD (defaults to today).
+    - user / email (optional): target identifier; secretariat/admin may query any member,
+      while regular members may only query their own eligibility.
+    """
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed."}, status=405)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required."}, status=401)
+
+    date_param = (request.GET.get("date") or "").strip()
+    if date_param:
+        try:
+            target_date = date.fromisoformat(date_param)
+        except ValueError:
+            return JsonResponse(
+                {"error": "Invalid date format. Expected YYYY-MM-DD."},
+                status=400,
+            )
+    else:
+        target_date = timezone.localdate()
+
+    requested_identifier = (
+        request.GET.get("user") or request.GET.get("email") or ""
+    ).strip()
+
+    if requested_identifier:
+        if not request.user.can_manage_members:
+            own_profile = MemberProfile.objects.filter(user=request.user).first()
+            own_identifiers = {
+                request.user.username.lower(),
+                (request.user.email or "").lower(),
+            }
+            if own_profile and own_profile.member_number:
+                own_identifiers.add(own_profile.member_number.lower())
+            if requested_identifier.lower() not in own_identifiers:
+                return JsonResponse(
+                    {
+                        "error": "You do not have permission to check another member's eligibility."
+                    },
+                    status=403,
+                )
+        target_subject = requested_identifier
+    else:
+        target_subject = request.user
+
+    result = check_eligibility(target_subject, target_date=target_date)
+    return JsonResponse(result, status=200)

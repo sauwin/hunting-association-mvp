@@ -1,0 +1,10 @@
+Hello {{ member_name|default:"Member" }},
+
+This is an automated renewal reminder from the Hunting Association MVP.
+Your membership (ID: {{ member_number|default:"Pending" }}) is scheduled to expire on {{ valid_until }}.
+{% if days_remaining is not None %}Days remaining until expiry: {{ days_remaining }}.{% endif %}
+
+Please sign in to your member portal or contact the secretariat to renew your membership.
+
+---
+SYNTHETIC DEMO NOTICE — Placeholder notification template (no live SMTP delivery).

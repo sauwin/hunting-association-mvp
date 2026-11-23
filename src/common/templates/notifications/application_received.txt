@@ -1,0 +1,9 @@
+Hello {{ applicant_name|default:"Applicant" }},
+
+Thank you for submitting your membership application to the Hunting Association MVP.
+{% if quote_total %}Your frozen sample fee quote is {{ quote_total }} {{ currency|default:"EUR" }} (Rule: {{ rule_version|default:"sample" }}).{% endif %}
+
+Our secretariat will review your application and update your membership status.
+
+---
+SYNTHETIC DEMO NOTICE — Placeholder notification template (no live SMTP delivery).
