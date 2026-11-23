@@ -116,7 +116,7 @@
   - Adapted and styled the Slovak templates (`representatives.html`, `volunteer.html`) and updated global navigation links in `base.html` to match the existing association design system.
   - Created the synthetic Slovak seed command (`seed_representatives.py`), verified region filtering and private enquiry handling in the browser and admin panel inside Docker Compose, and verified all 13 unit tests pass via `python manage.py test public_site`.
 
-## Entry 10 — Secretariat Back Office, Manual Payment Recording, Quick-Add & CSV Export
+## Entry 11 — Secretariat Back Office, Manual Payment Recording, Quick-Add & CSV Export
 - **Date:** 2026-11-19
 - **Task / Issue:** Implement role-protected secretariat back office with searchable/paginated member directory, application approval and validity dates management, synthetic member quick-add, manual payment tracking (`pending`, `paid`, `overdue`, `cancelled`), CSV export, and automated tests (Student A scope, Issue #14).
 - **Prompt Summary:** Asked AI to build secretariat forms (`MemberStatusUpdateForm`, `ManualPaymentForm`, `SecretariatQuickAddMemberForm`), protect back-office views with `@role_required(User.Role.SECRETARIAT, User.Role.ADMIN)`, create templates under `src/membership/templates/membership/backoffice/`, and add end-to-end role-isolation, payment audit, and CSV export tests.
@@ -125,7 +125,7 @@
   - Verified `/membership/backoffice/`, member detail approval/payment forms, quick-add workflow, and filtered CSV download in the browser.
   - Ran `docker compose exec web python manage.py test membership` and verified all 16 tests pass, confirming regular `member` accounts receive HTTP 403 on all secretariat endpoints.
 
-## Entry 11 — Membership Interest Enquiry & Student A Registration Integration
+## Entry 12 — Membership Interest Enquiry & Student A Registration Integration
 - **Date:** 2026-11-19
 - **Task / Issue:** Implement Block 5 (`MembershipEnquiry` model and migration, Django Admin workflow, `MembershipEnquiryForm` with consent and honeypot protection, `/membership-interest/` view and template, unified handoff links into Student A's registration/application flow, and integration tests) (`public_site` app, Student B scope, Issue #27).
 - **Prompt Summary:** Consulted AI on structuring pre-registration membership enquiry fields and verifying seamless URL handoff integration with Student A's `accounts` and `membership` endpoints.
@@ -136,7 +136,7 @@
   - Built and styled `membership_interest.html` and updated `how_to_join.html` and `base.html` to provide a clear, unified handoff path into Student A's `/membership/apply/`, `/accounts/register/`, and `/membership/calculator/` routes.
   - Executed `docker compose exec web python manage.py test public_site` and confirmed all 18 unit and integration tests pass.
 
-## Entry 12 — Responsive Polish, Accessibility, SEO & Social Share Links
+## Entry 13 — Responsive Polish, Accessibility, SEO & Social Share Links
 - **Date:** 2026-11-22
 - **Task / Issue:** Implement Block 6 (`robots.txt`, dynamic `sitemap.xml`, Open Graph social sharing metadata, association social channel links, article copy-link share control, keyboard skip-to-content navigation, ARIA attributes, and automated tests) (`public_site` app, Student B scope, Issue #YY).
 - **Prompt Summary:** Consulted AI on structuring dynamic XML sitemaps in Django, Open Graph meta tag blocks across templates, and WCAG-friendly skip-to-content and ARIA attributes.

@@ -11,6 +11,7 @@ urlpatterns = [
     path("my-card/", views.member_card_view, name="my_card"),
     path("cards/<int:member_id>/", views.member_card_view, name="member_card_detail"),
     path("export-data/", views.export_my_data, name="export_my_data"),
+    path("api/eligibility/", views.eligibility_api_view, name="eligibility_api"),
     # Secretariat Back Office
     path("backoffice/", views.backoffice_member_list, name="backoffice_member_list"),
     path(
