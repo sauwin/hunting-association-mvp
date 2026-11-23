@@ -5,9 +5,12 @@ from decimal import Decimal
 from io import StringIO
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
+
+from common.notifications import send as send_notification
 
 from .models import (
     ConsentRecord,
@@ -17,11 +20,11 @@ from .models import (
     MembershipStatusHistory,
     PaymentRecord,
 )
-
 from .services import (
     DEFAULT_CONSENT_TEXT,
     DEFAULT_CONSENT_VERSION,
     calculate_fee_breakdown,
+    check_eligibility,
     create_frozen_fee_quote,
     transition_member_status,
 )
@@ -678,3 +681,357 @@ class SecretariatBackOfficeTests(TestCase):
         self.assertEqual(rows[0]["status"], "active")
         self.assertEqual(rows[0]["valid_until"], "2027-12-31")
         self.assertEqual(rows[0]["latest_payment_status"], "paid")
+
+class EligibilityContractTests(TestCase):
+    """Contract tests matching synthetic examples in docs/contracts.md."""
+
+    def setUp(self):
+        self.secretariat_user = User.objects.create_user(
+            username="eligibility_staff",
+            email="eligibility_staff@example.test",
+            password="StrongPassword123!",
+            role=User.Role.SECRETARIAT,
+        )
+        self.hunter_user = User.objects.create_user(
+            username="active_hunter",
+            email="hunter@example.test",
+            password="StrongPassword123!",
+            first_name="Jozef",
+            last_name="Lesny",
+            role=User.Role.MEMBER,
+        )
+        self.non_hunter_user = User.objects.create_user(
+            username="active_non_hunter",
+            email="non_hunter@example.test",
+            password="StrongPassword123!",
+            first_name="Eva",
+            last_name="Kralova",
+            role=User.Role.MEMBER,
+        )
+        self.applicant_user = User.objects.create_user(
+            username="pending_user",
+            email="applicant_elig@example.test",
+            password="StrongPassword123!",
+            role=User.Role.MEMBER,
+        )
+
+        self.hunter_profile = MemberProfile.objects.create(
+            user=self.hunter_user,
+            member_number="HA-2026-0100",
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900100100",
+            street_address="Lesna 1",
+            city="Nitra",
+            postal_code="94901",
+            hunting_licence_number="SK-NR-2026-100",
+            licence_valid_until=date(2026, 12, 31),
+            insurance_valid_until=date(2026, 12, 31),
+            status=MemberProfile.Status.ACTIVE,
+            valid_from=date(2026, 1, 1),
+            valid_until=date(2026, 12, 31),
+        )
+        self.non_hunter_profile = MemberProfile.objects.create(
+            user=self.non_hunter_user,
+            member_number="HA-2026-0101",
+            member_type=MemberProfile.MemberType.NON_HUNTER,
+            phone="+421900100101",
+            street_address="Hlavna 2",
+            city="Nitra",
+            postal_code="94901",
+            status=MemberProfile.Status.ACTIVE,
+            valid_from=date(2026, 1, 1),
+            valid_until=date(2026, 12, 31),
+        )
+        self.applicant_profile = MemberProfile.objects.create(
+            user=self.applicant_user,
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900100102",
+            street_address="Polna 3",
+            city="Trnava",
+            postal_code="91701",
+            status=MemberProfile.Status.APPLICANT,
+        )
+
+    def test_check_eligibility_matches_docs_contract_examples(self):
+        target = date(2026, 6, 15)
+
+        # Example 1: Active hunter with valid licence and insurance
+        self.assertEqual(
+            check_eligibility("hunter@example.test", target),
+            {
+                "active": True,
+                "licenceValid": True,
+                "insuranceValid": True,
+                "validUntil": "2026-12-31",
+            },
+        )
+
+        # Example 2: Active non-hunter without hunting licence or insurance
+        self.assertEqual(
+            check_eligibility("non_hunter@example.test", target),
+            {
+                "active": True,
+                "licenceValid": False,
+                "insuranceValid": False,
+                "validUntil": "2026-12-31",
+            },
+        )
+
+        # Example 3: Applicant without validity dates
+        self.assertEqual(
+            check_eligibility("applicant_elig@example.test", target),
+            {
+                "active": False,
+                "licenceValid": False,
+                "insuranceValid": False,
+                "validUntil": None,
+            },
+        )
+
+    def test_check_eligibility_handles_expiry_dates_and_identifiers(self):
+        # After valid_until, active/licenceValid/insuranceValid all become False
+        self.assertEqual(
+            check_eligibility("HA-2026-0100", date(2027, 1, 1)),
+            {
+                "active": False,
+                "licenceValid": False,
+                "insuranceValid": False,
+                "validUntil": "2026-12-31",
+            },
+        )
+
+        # Lookup by User instance and ISO date string works
+        result = check_eligibility(self.hunter_user, "2026-12-31")
+        self.assertTrue(result["active"])
+        self.assertTrue(result["licenceValid"])
+
+        # Unknown user safely returns inactive contract shape
+        self.assertEqual(
+            check_eligibility("nonexistent@example.test", date(2026, 6, 15)),
+            {
+                "active": False,
+                "licenceValid": False,
+                "insuranceValid": False,
+                "validUntil": None,
+            },
+        )
+
+    def test_eligibility_api_enforces_auth_validation_and_rbac(self):
+        api_url = reverse("membership:eligibility_api")
+
+        # Unauthenticated request -> 401
+        self.assertEqual(self.client.get(api_url).status_code, 401)
+
+        # Member can check own eligibility
+        self.client.force_login(self.hunter_user)
+        own_response = self.client.get(api_url, {"date": "2026-06-15"})
+        self.assertEqual(own_response.status_code, 200)
+        self.assertEqual(
+            json.loads(own_response.content),
+            {
+                "active": True,
+                "licenceValid": True,
+                "insuranceValid": True,
+                "validUntil": "2026-12-31",
+            },
+        )
+
+        # Invalid date format -> 400
+        bad_date = self.client.get(api_url, {"date": "15-06-2026"})
+        self.assertEqual(bad_date.status_code, 400)
+
+        # Member cannot query another member's eligibility -> 403
+        forbidden = self.client.get(
+            api_url,
+            {"email": "non_hunter@example.test", "date": "2026-06-15"},
+        )
+        self.assertEqual(forbidden.status_code, 403)
+
+        # Secretariat can query any member's eligibility -> 200
+        self.client.force_login(self.secretariat_user)
+        staff_response = self.client.get(
+            api_url,
+            {"email": "non_hunter@example.test", "date": "2026-06-15"},
+        )
+        self.assertEqual(staff_response.status_code, 200)
+        self.assertEqual(
+            json.loads(staff_response.content),
+            {
+                "active": True,
+                "licenceValid": False,
+                "insuranceValid": False,
+                "validUntil": "2026-12-31",
+            },
+        )
+
+
+class NotificationStubAndRenewalCommandTests(TestCase):
+    def setUp(self):
+        self.expiring_user = User.objects.create_user(
+            username="expiring_member",
+            email="expiring@example.test",
+            password="StrongPassword123!",
+            first_name="Peter",
+            last_name="Maly",
+            role=User.Role.MEMBER,
+        )
+        self.far_future_user = User.objects.create_user(
+            username="future_member",
+            email="future@example.test",
+            password="StrongPassword123!",
+            role=User.Role.MEMBER,
+        )
+        self.expired_user = User.objects.create_user(
+            username="expired_member",
+            email="expired@example.test",
+            password="StrongPassword123!",
+            role=User.Role.MEMBER,
+        )
+        self.applicant_user = User.objects.create_user(
+            username="applicant_reminder",
+            email="applicant_rem@example.test",
+            password="StrongPassword123!",
+            role=User.Role.MEMBER,
+        )
+        self.no_email_user = User.objects.create_user(
+            username="no_email_member",
+            email="",
+            password="StrongPassword123!",
+            role=User.Role.MEMBER,
+        )
+
+        # Active member expiring in 17 days from 2026-11-23 -> SHOULD receive reminder
+        MemberProfile.objects.create(
+            user=self.expiring_user,
+            member_number="HA-2026-0201",
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900201201",
+            street_address="Lesna 10",
+            city="Nitra",
+            postal_code="94901",
+            status=MemberProfile.Status.ACTIVE,
+            valid_from=date(2025, 12, 10),
+            valid_until=date(2026, 12, 10),
+        )
+        # Active member expiring far in the future -> outside 30-day window
+        MemberProfile.objects.create(
+            user=self.far_future_user,
+            member_number="HA-2026-0202",
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900202202",
+            street_address="Lesna 11",
+            city="Nitra",
+            postal_code="94901",
+            status=MemberProfile.Status.ACTIVE,
+            valid_from=date(2026, 6, 1),
+            valid_until=date(2027, 6, 1),
+        )
+        # Already past valid_until -> excluded from upcoming window
+        MemberProfile.objects.create(
+            user=self.expired_user,
+            member_number="HA-2026-0203",
+            member_type=MemberProfile.MemberType.NON_HUNTER,
+            phone="+421900203203",
+            street_address="Lesna 12",
+            city="Nitra",
+            postal_code="94901",
+            status=MemberProfile.Status.ACTIVE,
+            valid_from=date(2025, 11, 1),
+            valid_until=date(2026, 11, 1),
+        )
+        # Applicant (not active) -> excluded
+        MemberProfile.objects.create(
+            user=self.applicant_user,
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900204204",
+            street_address="Lesna 13",
+            city="Nitra",
+            postal_code="94901",
+            status=MemberProfile.Status.APPLICANT,
+            valid_until=date(2026, 12, 5),
+        )
+        # Active member with empty email -> skipped safely
+        MemberProfile.objects.create(
+            user=self.no_email_user,
+            member_number="HA-2026-0205",
+            member_type=MemberProfile.MemberType.HUNTER,
+            phone="+421900205205",
+            street_address="Lesna 14",
+            city="Nitra",
+            postal_code="94901",
+            status=MemberProfile.Status.ACTIVE,
+            valid_from=date(2025, 12, 5),
+            valid_until=date(2026, 12, 5),
+        )
+
+    def test_shared_notification_stub_supports_email_log_and_validation(self):
+        with self.assertLogs("common.notifications", level="INFO") as logs:
+            sent_email = send_notification(
+                channel="email",
+                recipient="demo@example.test",
+                template="application_received",
+                context={
+                    "applicant_name": "Jan Novak",
+                    "quote_total": "85.00",
+                    "currency": "EUR",
+                    "rule_version": "2026-v1-sample",
+                },
+            )
+            sent_log = send_notification(
+                channel="log",
+                recipient="visitor@example.test",
+                template="enquiry_acknowledgement",
+                context={
+                    "sender_name": "Anna",
+                    "enquiry_type": "volunteer",
+                    "region": "Nitra",
+                },
+            )
+
+        self.assertTrue(sent_email)
+        self.assertTrue(sent_log)
+        self.assertEqual(len(logs.output), 2)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["demo@example.test"])
+        self.assertIn("85.00 EUR", mail.outbox[0].body)
+        self.assertIn("SYNTHETIC DEMO NOTICE", mail.outbox[0].body)
+
+        with self.assertRaises(ValueError):
+            send_notification("sms", "demo@example.test", "renewal_reminder", {})
+        with self.assertRaises(ValueError):
+            send_notification("email", "demo@example.test", "unknown_template", {})
+        with self.assertRaises(ValueError):
+            send_notification("email", "", "renewal_reminder", {})
+
+    def test_send_renewal_reminders_command_dry_run_and_dispatch(self):
+        # Dry-run previews matching members without dispatching email
+        dry_out = StringIO()
+        call_command(
+            "send_renewal_reminders",
+            "--date",
+            "2026-11-23",
+            "--days",
+            "30",
+            "--dry-run",
+            stdout=dry_out,
+        )
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertIn("[DRY-RUN]", dry_out.getvalue())
+        self.assertIn("processed=1, skipped=1", dry_out.getvalue())
+
+        # Actual run dispatches exactly one renewal reminder email
+        out = StringIO()
+        call_command(
+            "send_renewal_reminders",
+            "--date",
+            "2026-11-23",
+            "--days",
+            "30",
+            stdout=out,
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["expiring@example.test"])
+        self.assertIn("HA-2026-0201", mail.outbox[0].body)
+        self.assertIn("2026-12-10", mail.outbox[0].body)
+        self.assertIn("17", mail.outbox[0].body)
+        self.assertIn("processed=1, skipped=1", out.getvalue())

@@ -145,3 +145,12 @@
   - Implemented `robots_txt_view` and `sitemap_xml_view` in `src/public_site/views.py` and wired `/robots.txt` and `/sitemap.xml` in `src/public_site/urls.py`, verifying that unpublished draft articles are strictly excluded from the sitemap.
   - Updated `src/public_site/templates/public_site/base.html` and `article_detail.html` with Open Graph tags, association social links (without third-party API dependencies), a one-click article link copy button, and keyboard accessibility enhancements (`#main-content` skip link, `aria-expanded` toggle, focus-visible rings).
   - Verified `/robots.txt` and `/sitemap.xml` in the browser and ran `docker compose exec web python manage.py test public_site` confirming all 22 unit and integration tests pass.
+
+  ## Entry 14 — Eligibility Contract API/Function, Shared Notification Stub & Renewal Reminder Command
+- **Date:** 2026-11-23
+- **Task / Issue:** Implement `check_eligibility` service and protected `/membership/api/eligibility/` JSON endpoint matching `docs/contracts.md`, build shared `common.notifications.send` stub with templates and safe console email backend, add `send_renewal_reminders` management command, document ADR-0007, and add contract/unit tests (Student A scope, Issue #25).
+- **Prompt Summary:** Asked AI to implement `check_eligibility(user_or_email, target_date)` and `/membership/api/eligibility/` with RBAC checks, create `src/common/notifications.py` with templates for `application_received`, `renewal_reminder`, and `enquiry_acknowledgement`, implement `send_renewal_reminders` CLI command with `--days`/`--date`/`--dry-run`, write ADR-0007, and add automated contract tests.
+- **AI Output:** Updated `src/membership/services.py`, `src/membership/views.py`, `src/membership/urls.py`, `src/config/settings.py`, `src/membership/tests.py`, created `src/common/notifications.py`, 3 notification templates, `send_renewal_reminders.py`, and `docs/adr/0007-eligibility-contract-and-notification-stub.md`.
+- **Verification & Human Changes:**
+  - Verified `docker compose exec web python manage.py send_renewal_reminders --days 60 --dry-run` and regular dispatch via console email backend.
+  - Ran `docker compose exec web python manage.py test` across all modules (`accounts`, `membership`, `public_site`) and verified all tests pass, including all 3 synthetic contract examples from `docs/contracts.md`, RBAC 401/403 enforcement, and renewal command filtering.
