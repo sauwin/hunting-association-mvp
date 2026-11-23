@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Poľovnícka Asociácia Slovenska{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}Slovenská poľovnícka komora{% endblock %}">
+    <meta name="description" content="{% block meta_description %}Slovenská poľovnícka komora — ochrana prírody, udržateľné poľovníctvo a podpora poľovníckej komunity.{% endblock %}">
+
+    <!-- Open Graph / Social Sharing Metadata -->
+    <meta property="og:site_name" content="Slovenská poľovnícka komora">
+    <meta property="og:title" content="{% block og_title %}Poľovnícka Asociácia Slovenska{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Ochrana prírody, udržateľný výkon poľovníctva, starostlivosť o zver a podpora poľovníckej komunity na Slovensku.{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    {% block og_extra %}{% endblock %}
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,6 +29,7 @@
                             900: '#081c15',
                         },
                         amber: {
+                            500: '#f59e0b',
                             600: '#d97706',
                             700: '#b45309',
                         }
@@ -31,13 +41,19 @@
 </head>
 <body class="bg-stone-50 text-stone-800 flex flex-col min-h-screen font-sans">
 
+    <!-- Keyboard Accessibility: Skip to main content -->
+    <a href="#main-content"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:font-semibold focus:shadow-lg">
+        Preskočiť na hlavný obsah
+    </a>
+
     <header class="bg-forest-800 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-18 py-3">
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="{% url 'public_site:home' %}" class="flex items-center gap-3 text-white group">
+                    <a href="{% url 'public_site:home' %}" class="flex items-center gap-3 text-white group focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg">
                         <div class="w-10 h-10 rounded-full bg-forest-700 border border-forest-600 flex items-center justify-center shadow-inner group-hover:bg-forest-600 transition">
-                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
                         </div>
@@ -48,22 +64,27 @@
                     </a>
                 </div>
 
-                <nav class="hidden lg:flex space-x-5 items-center">
-                    <a href="{% url 'public_site:home' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Domov</a>
-                    <a href="{% url 'public_site:about' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">O nás</a>
-                    <a href="{% url 'public_site:article_list' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Aktuality</a>
-                    <a href="{% url 'public_site:representatives' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Zástupcovia</a>
-                    <a href="{% url 'public_site:volunteer' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Dobrovoľníctvo</a>
-                    <a href="{% url 'public_site:how_to_join' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">Ako vstúpiť</a>
-                    <a href="{% url 'public_site:faq' %}" class="text-stone-200 hover:text-white font-medium transition text-sm">FAQ</a>
-                    <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md font-semibold text-sm transition shadow-sm">
+                <nav class="hidden lg:flex space-x-5 items-center" aria-label="Hlavná navigácia">
+                    <a href="{% url 'public_site:home' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Domov</a>
+                    <a href="{% url 'public_site:about' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">O nás</a>
+                    <a href="{% url 'public_site:article_list' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Aktuality</a>
+                    <a href="{% url 'public_site:representatives' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Zástupcovia</a>
+                    <a href="{% url 'public_site:volunteer' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Dobrovoľníctvo</a>
+                    <a href="{% url 'public_site:how_to_join' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Ako vstúpiť</a>
+                    <a href="{% url 'public_site:faq' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">FAQ</a>
+                    <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md font-semibold text-sm transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                         Stať sa členom
                     </a>
                 </nav>
 
                 <div class="lg:hidden flex items-center">
-                    <button id="mobile-menu-btn" type="button" class="text-stone-200 hover:text-white focus:outline-none p-2" aria-label="Toggle menu">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button id="mobile-menu-btn"
+                            type="button"
+                            class="text-stone-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded p-2"
+                            aria-label="Otvoriť hlavné menu"
+                            aria-expanded="false"
+                            aria-controls="mobile-menu">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                         </svg>
                     </button>
@@ -71,7 +92,7 @@
             </div>
         </div>
 
-        <div id="mobile-menu" class="hidden lg:hidden bg-forest-900 px-4 pt-2 pb-4 space-y-2 border-t border-forest-700">
+        <div id="mobile-menu" class="hidden lg:hidden bg-forest-900 px-4 pt-2 pb-4 space-y-2 border-t border-forest-700" aria-label="Mobilná navigácia">
             <a href="{% url 'public_site:home' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Domov</a>
             <a href="{% url 'public_site:about' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">O nás</a>
             <a href="{% url 'public_site:article_list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Aktuality</a>
@@ -85,7 +106,7 @@
         </div>
     </header>
 
-    <main class="flex-grow">
+    <main id="main-content" class="flex-grow" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
 
@@ -93,11 +114,35 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
                 <h3 class="text-white text-base font-bold mb-3 flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Slovenská poľovnícka komora
+                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block" aria-hidden="true"></span> Slovenská poľovnícka komora
                 </h3>
-                <p class="text-sm text-stone-400 leading-relaxed">
+                <p class="text-sm text-stone-400 leading-relaxed mb-4">
                     Ochrana prírody, udržateľný výkon poľovníctva, starostlivosť o zver a podpora poľovníckej komunity na Slovensku.
                 </p>
+                <!-- Association Social Media Channels -->
+                <div class="flex items-center gap-3" aria-label="Sociálne siete asociácie">
+                    <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer"
+                       aria-label="Facebook Slovenskej poľovníckej komory"
+                       class="w-9 h-9 rounded-full bg-forest-800 hover:bg-forest-700 border border-forest-700 flex items-center justify-center text-stone-300 hover:text-white transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer"
+                       aria-label="Instagram Slovenskej poľovníckej komory"
+                       class="w-9 h-9 rounded-full bg-forest-800 hover:bg-forest-700 border border-forest-700 flex items-center justify-center text-stone-300 hover:text-white transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer"
+                       aria-label="YouTube kanál Slovenskej poľovníckej komory"
+                       class="w-9 h-9 rounded-full bg-forest-800 hover:bg-forest-700 border border-forest-700 flex items-center justify-center text-stone-300 hover:text-white transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                    </a>
+                </div>
             </div>
             <div>
                 <h4 class="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Rýchle odkazy</h4>
@@ -109,6 +154,7 @@
                     <li><a href="{% url 'public_site:volunteer' %}" class="hover:text-white transition">Zapojiť sa ako dobrovoľník</a></li>
                     <li><a href="{% url 'public_site:how_to_join' %}" class="hover:text-white transition">Ako sa stať členom</a></li>
                     <li><a href="{% url 'public_site:faq' %}" class="hover:text-white transition">Často kladené otázky</a></li>
+                    <li><a href="{% url 'public_site:sitemap_xml' %}" class="hover:text-white transition text-stone-400">Mapa stránok (Sitemap)</a></li>
                 </ul>
             </div>
             <div>
@@ -126,7 +172,7 @@
                 </div>
             </div>
         </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-forest-800 text-xs text-stone-500 text-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-forest-800 text-xs text-stone-400 text-center">
             © 2026 Poľovnícka Asociácia Slovenska. Všetky práva vyhradené.
         </div>
     </footer>
@@ -136,7 +182,8 @@
         const menu = document.getElementById('mobile-menu');
         if (btn && menu) {
             btn.addEventListener('click', () => {
-                menu.classList.toggle('hidden');
+                const isHidden = menu.classList.toggle('hidden');
+                btn.setAttribute('aria-expanded', String(!isHidden));
             });
         }
     </script>

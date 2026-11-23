@@ -23,4 +23,6 @@ urlpatterns = [
         views.membership_interest_view,
         name="membership_interest",
     ),
+    path("robots.txt", views.robots_txt_view, name="robots_txt"),
+    path("sitemap.xml", views.sitemap_xml_view, name="sitemap_xml"),
 ]

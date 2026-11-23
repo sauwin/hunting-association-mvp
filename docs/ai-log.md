@@ -135,3 +135,13 @@
   - Configured `MembershipEnquiryAdmin` in `src/public_site/admin.py` with status filtering (`NEW`, `CONTACTED`, `CONVERTED`, `CLOSED`), bulk actions, and read-only protection for submitted visitor details.
   - Built and styled `membership_interest.html` and updated `how_to_join.html` and `base.html` to provide a clear, unified handoff path into Student A's `/membership/apply/`, `/accounts/register/`, and `/membership/calculator/` routes.
   - Executed `docker compose exec web python manage.py test public_site` and confirmed all 18 unit and integration tests pass.
+
+## Entry 12 — Responsive Polish, Accessibility, SEO & Social Share Links
+- **Date:** 2026-11-22
+- **Task / Issue:** Implement Block 6 (`robots.txt`, dynamic `sitemap.xml`, Open Graph social sharing metadata, association social channel links, article copy-link share control, keyboard skip-to-content navigation, ARIA attributes, and automated tests) (`public_site` app, Student B scope, Issue #YY).
+- **Prompt Summary:** Consulted AI on structuring dynamic XML sitemaps in Django, Open Graph meta tag blocks across templates, and WCAG-friendly skip-to-content and ARIA attributes.
+- **AI Output:** Provided reference views for `robots_txt_view` and `sitemap_xml_view`, Open Graph meta blocks, clipboard share button script, and unit tests.
+- **Verification & Human Changes:**
+  - Implemented `robots_txt_view` and `sitemap_xml_view` in `src/public_site/views.py` and wired `/robots.txt` and `/sitemap.xml` in `src/public_site/urls.py`, verifying that unpublished draft articles are strictly excluded from the sitemap.
+  - Updated `src/public_site/templates/public_site/base.html` and `article_detail.html` with Open Graph tags, association social links (without third-party API dependencies), a one-click article link copy button, and keyboard accessibility enhancements (`#main-content` skip link, `aria-expanded` toggle, focus-visible rings).
+  - Verified `/robots.txt` and `/sitemap.xml` in the browser and ran `docker compose exec web python manage.py test public_site` confirming all 22 unit and integration tests pass.

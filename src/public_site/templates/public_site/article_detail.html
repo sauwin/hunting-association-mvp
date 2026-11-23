@@ -3,6 +3,15 @@
 {% block title %}{{ article.title }} | Slovenská poľovnícka komora{% endblock %}
 {% block meta_description %}{{ article.summary }}{% endblock %}
 
+{% block og_title %}{{ article.title }} | Slovenská poľovnícka komora{% endblock %}
+{% block og_description %}{{ article.summary }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_extra %}
+  {% if article.cover_image %}
+    <meta property="og:image" content="{{ article.cover_image }}">
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 {% if is_preview %}
   <!-- Editor draft preview banner -->
@@ -67,7 +76,7 @@
       {{ article.body|linebreaks }}
     </div>
 
-    <!-- Social share links -->
+<!-- Social share links -->
     <div class="mt-12 pt-6 border-t border-stone-200 flex flex-wrap items-center justify-between gap-4">
       <span class="text-sm font-semibold text-stone-700">Zdieľať článok:</span>
       <div class="flex flex-wrap items-center gap-3">
@@ -86,8 +95,30 @@
            class="px-3.5 py-2 rounded-lg bg-stone-100 hover:bg-emerald-50 text-stone-700 hover:text-emerald-800 text-xs font-semibold transition">
           E-mail
         </a>
+        <button type="button" id="copy-article-link-btn"
+                data-url="{{ request.build_absolute_uri }}"
+                class="px-3.5 py-2 rounded-lg bg-stone-100 hover:bg-emerald-50 text-stone-700 hover:text-emerald-800 text-xs font-semibold transition cursor-pointer">
+          Kopírovať odkaz
+        </button>
       </div>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const copyBtn = document.getElementById("copy-article-link-btn");
+        if (copyBtn && navigator.clipboard) {
+          copyBtn.addEventListener("click", function () {
+            navigator.clipboard.writeText(copyBtn.dataset.url).then(function () {
+              const originalText = copyBtn.textContent;
+              copyBtn.textContent = "Skopírované ✓";
+              setTimeout(function () {
+                copyBtn.textContent = originalText;
+              }, 2000);
+            });
+          });
+        }
+      });
+    </script>
 
     <!-- Membership call to action -->
     <div class="mt-12 bg-emerald-900 text-white rounded-2xl p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
