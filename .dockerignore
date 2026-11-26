@@ -1,0 +1,15 @@
+# Keep the Docker build context small and, above all, keep secrets out of it.
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.coverage
+htmlcov
+venv
+.venv
+docs
+README.md

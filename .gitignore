@@ -1,6 +1,25 @@
+# Python
 __pycache__/
 *.pyc
 venv/
+.venv/
+.pytest_cache/
+
+# Secrets and local configuration (never commit real values; use .env.example)
 .env
+
+# Local databases, test artefacts, logs
 db.sqlite3
+.coverage
+coverage.xml
+htmlcov/
+*.log
+
+# Collected static files (not used in the dev setup)
+staticfiles/
+
+# OS / editor
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
