@@ -1,0 +1,23 @@
+{% comment %}
+  Account entries for the mobile menu of the shared header (flat list, no dropdown).
+  Included from public_site/base.html right before the "Stať sa členom" button.
+{% endcomment %}
+<div class="border-t border-forest-700 pt-2 mt-2">
+    {% if user.is_authenticated %}
+    <p class="px-3 pt-1 pb-1 text-xs uppercase tracking-wider text-stone-400">
+        {{ user.get_full_name|default:user.username }} · {{ user.get_role_display }}
+    </p>
+    <a href="{% url 'accounts:dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Môj účet</a>
+    <a href="{% url 'membership:application_overview' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Moje členstvo</a>
+    <a href="{% url 'membership:my_card' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Členská karta</a>
+    {% if user.can_manage_members %}
+    <a href="{% url 'membership:backoffice_member_list' %}" class="block px-3 py-2 rounded-md text-base font-semibold text-amber-400 hover:bg-forest-700">Sekretariát (back office)</a>
+    {% endif %}
+    <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Odhlásiť sa</button>
+    </form>
+    {% else %}
+    <a href="{% url 'accounts:login' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Prihlásiť sa</a>
+    {% endif %}
+</div>

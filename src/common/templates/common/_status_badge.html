@@ -1,0 +1,9 @@
+{% comment %}
+  Coloured status pill used for both membership and payment statuses.
+  Usage: {% include "common/_status_badge.html" with status=profile.status label=profile.get_status_display %}
+{% endcomment %}
+<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
+    {% if status == 'active' or status == 'paid' %}bg-emerald-100 text-emerald-800
+    {% elif status == 'applicant' or status == 'pending' %}bg-amber-100 text-amber-800
+    {% elif status == 'suspended' or status == 'overdue' %}bg-red-100 text-red-800
+    {% else %}bg-stone-200 text-stone-700{% endif %}">{{ label }}</span>

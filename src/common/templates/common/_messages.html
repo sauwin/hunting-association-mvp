@@ -1,0 +1,23 @@
+{% comment %}
+  Django "messages" framework output, styled like Student B's notices.
+  Included once by portal_base.html, so pages must NOT render messages themselves.
+{% endcomment %}
+{% if messages %}
+<div class="mb-8 space-y-3" role="status" aria-live="polite">
+    {% for message in messages %}
+    <div class="rounded-xl border p-4 text-sm font-medium shadow-sm flex items-start gap-3
+        {% if message.level_tag == 'error' %}bg-red-50 border-red-200 text-red-800
+        {% elif message.level_tag == 'warning' %}bg-amber-50 border-amber-300 text-amber-900
+        {% else %}bg-forest-50 border-forest-600/30 text-forest-900{% endif %}">
+        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            {% if message.level_tag == 'error' or message.level_tag == 'warning' %}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path>
+            {% else %}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            {% endif %}
+        </svg>
+        <p>{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

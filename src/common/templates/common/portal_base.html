@@ -1,0 +1,36 @@
+{% extends "public_site/base.html" %}
+{% comment %}
+  Shared page skeleton for the member area (accounts + membership modules).
+
+  It extends Student B's public_site/base.html, so every page keeps the same header,
+  footer, fonts and Tailwind setup, and only fills in the page body:
+    hero (eyebrow / title / subtitle / actions) -> flash messages -> notice -> content.
+
+  Child templates override these blocks:
+    back_link, hero_eyebrow, hero_title, hero_subtitle, hero_actions,
+    portal_notice, portal_width, portal_content
+{% endcomment %}
+
+{% block content %}
+<section class="bg-forest-800 text-white py-10 border-b border-forest-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% block back_link %}{% endblock %}
+        <div class="flex flex-wrap items-end justify-between gap-6">
+            <div class="min-w-0">
+                <span class="inline-block bg-forest-700 text-amber-400 text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+                    {% block hero_eyebrow %}Member portal{% endblock %}
+                </span>
+                <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-3">{% block hero_title %}{% endblock %}</h1>
+                <p class="text-stone-300 max-w-2xl text-base sm:text-lg leading-relaxed">{% block hero_subtitle %}{% endblock %}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">{% block hero_actions %}{% endblock %}</div>
+        </div>
+    </div>
+</section>
+
+<section class="{% block portal_width %}max-w-7xl{% endblock %} mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    {% include "common/_messages.html" %}
+    {% block portal_notice %}{% endblock %}
+    {% block portal_content %}{% endblock %}
+</section>
+{% endblock %}

@@ -1,31 +1,113 @@
-{% extends "accounts/base_auth.html" %}
+{% extends "common/portal_base.html" %}
 
 {% block title %}Account Dashboard | Hunting Association{% endblock %}
-{% block wrapper_class %}auth-wrapper--wide{% endblock %}
 
-{% block auth_content %}
-  <h1>Welcome, {{ user.first_name|default:user.username }}</h1>
-  <p class="auth-subtitle">Member Portal & Account Overview</p>
+{% block back_link %}
+  {% url 'public_site:home' as home_url %}
+  {% include "common/_back_link.html" with url=home_url label="Back to website" %}
+{% endblock %}
 
-  {% if messages %}
-    {% for message in messages %}
-      <div class="auth-alert" role="alert">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
+{% block hero_title %}Welcome, {{ user.first_name|default:user.username }}{% endblock %}
+{% block hero_subtitle %}Your account overview and shortcuts to the membership portal.{% endblock %}
 
-  <p><strong>Username:</strong> {{ user.username }}</p>
-  <p><strong>Email:</strong> {{ user.email }}</p>
-  <p><strong>Role:</strong> {{ user.get_role_display }}</p>
-
-  {% if user.can_manage_members %}
-    <div class="auth-alert" style="margin-top: 1.25rem;">
-      <strong>Secretariat Back Office</strong><br>
-      You have staff permissions to review membership applications and manage records.
-    </div>
-  {% endif %}
-
-  <form method="post" action="{% url 'accounts:logout' %}" style="margin-top: 1.5rem;">
+{% block hero_actions %}
+<form method="post" action="{% url 'accounts:logout' %}">
     {% csrf_token %}
-    <button type="submit" class="auth-btn auth-btn--secondary">Sign Out</button>
-  </form>
+    <button type="submit" class="inline-flex items-center justify-center rounded-md border border-forest-600 bg-forest-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-forest-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+        Sign Out
+    </button>
+</form>
+{% endblock %}
+
+{% block portal_content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+    <!-- Membership summary -->
+    <div class="lg:col-span-2 bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+        <h2 class="text-xl font-bold text-stone-900 mb-4">My membership</h2>
+        {% if profile %}
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Status</dt>
+                <dd class="mt-1">{% include "common/_status_badge.html" with status=profile.status label=profile.get_status_display %}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Member number</dt>
+                <dd class="mt-1 font-mono text-stone-900">{{ profile.member_number|default:"Pending secretariat approval" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Category</dt>
+                <dd class="mt-1 text-stone-900">{{ profile.get_member_type_display }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Valid until</dt>
+                <dd class="mt-1 text-stone-900">{{ profile.valid_until|date:"Y-m-d"|default:"—" }}</dd>
+            </div>
+        </dl>
+        <div class="mt-6 flex flex-wrap gap-3">
+            <a href="{% url 'membership:application_overview' %}" class="inline-flex items-center justify-center rounded-md bg-forest-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-600">Membership details &amp; quotes</a>
+            <a href="{% url 'membership:my_card' %}" class="inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100">Digital member card</a>
+        </div>
+        {% else %}
+        <p class="text-stone-600 leading-relaxed">
+            You have not submitted a membership application yet. Check the indicative fee first, or apply right away.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+            <a href="{% url 'membership:apply' %}" class="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700">Apply for membership</a>
+            <a href="{% url 'membership:fee_calculator' %}" class="inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100">Fee calculator</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Account details -->
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+        <h2 class="text-xl font-bold text-stone-900 mb-4">Account</h2>
+        <dl class="space-y-4">
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Username</dt>
+                <dd class="mt-1 text-stone-900 break-all">{{ user.username }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Email</dt>
+                <dd class="mt-1 text-stone-900 break-all">{{ user.email }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Role</dt>
+                <dd class="mt-1 text-stone-900">{{ user.get_role_display }}</dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<!-- Shortcuts -->
+<h2 class="text-xl font-bold text-stone-900 mt-10 mb-4">Shortcuts</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <a href="{% url 'membership:fee_calculator' %}" class="block rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:border-forest-600 hover:shadow">
+        <p class="font-semibold text-stone-900">Fee calculator</p>
+        <p class="mt-1 text-sm text-stone-600">Indicative membership fee (sample rates).</p>
+    </a>
+    <a href="{% url 'membership:application_overview' %}" class="block rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:border-forest-600 hover:shadow">
+        <p class="font-semibold text-stone-900">My membership &amp; quotes</p>
+        <p class="mt-1 text-sm text-stone-600">Status, frozen quotes, consents, history.</p>
+    </a>
+    <a href="{% url 'membership:my_card' %}" class="block rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:border-forest-600 hover:shadow">
+        <p class="font-semibold text-stone-900">Digital member card</p>
+        <p class="mt-1 text-sm text-stone-600">View, print or save your card.</p>
+    </a>
+    <a href="{% url 'membership:export_my_data' %}" class="block rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:border-forest-600 hover:shadow">
+        <p class="font-semibold text-stone-900">Export my data</p>
+        <p class="mt-1 text-sm text-stone-600">Download everything stored about you (JSON).</p>
+    </a>
+</div>
+
+{% if user.can_manage_members %}
+<div class="mt-10 rounded-2xl border border-amber-500/40 bg-amber-50 p-6 sm:p-8">
+    <h2 class="text-xl font-bold text-amber-900">Secretariat back office</h2>
+    <p class="mt-1 text-sm text-amber-900/80">You have staff permissions to review membership applications and manage records.</p>
+    <div class="mt-5 flex flex-wrap gap-3">
+        <a href="{% url 'membership:backoffice_member_list' %}" class="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700">Member directory</a>
+        <a href="{% url 'membership:backoffice_quick_add' %}" class="inline-flex items-center justify-center rounded-md border border-amber-600 bg-white px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100">Quick-add member</a>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from datetime import date
@@ -221,6 +222,17 @@ def member_card_view(
         "status_code": profile.status,
         "valid_until": profile.valid_until,
     }
+
+    # Where the "Back" button should lead: staff looking at somebody else's card go back
+    # to that member's back-office page, everybody else to their own membership overview.
+    if profile.user_id != request.user.id:
+        card_context["back_url"] = reverse(
+            "membership:backoffice_member_detail", args=[profile.pk]
+        )
+        card_context["back_label"] = "Back to member detail"
+    else:
+        card_context["back_url"] = reverse("membership:application_overview")
+        card_context["back_label"] = "Back to My Membership"
 
     response = render(request, "membership/member_card.html", card_context)
     if request.GET.get("download") == "1":

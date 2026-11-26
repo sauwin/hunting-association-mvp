@@ -1,0 +1,47 @@
+{% comment %}
+  Account entry in the shared site header (desktop). Included from public_site/base.html.
+  Anonymous user -> "Prihlásiť sa" link. Signed-in user -> dropdown (native <details>, no framework).
+  Labels are Slovak on purpose: this sits inside Student B's Slovak navigation bar.
+{% endcomment %}
+{% if user.is_authenticated %}
+<details id="account-menu" class="relative">
+    <summary class="list-none cursor-pointer flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-stone-200 hover:text-white hover:bg-forest-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 [&::-webkit-details-marker]:hidden">
+        <span class="w-7 h-7 rounded-full bg-forest-600 flex items-center justify-center text-xs font-bold text-white uppercase" aria-hidden="true">{{ user.first_name|default:user.username|slice:":1" }}</span>
+        <span class="max-w-[8rem] truncate">{{ user.first_name|default:user.username }}</span>
+        <svg class="w-4 h-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </summary>
+    <div class="absolute right-0 mt-2 w-64 rounded-lg bg-white text-stone-800 shadow-lg ring-1 ring-black/5 py-1 z-50">
+        <div class="px-4 py-3 border-b border-stone-200">
+            <p class="text-sm font-semibold text-stone-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+            <p class="text-xs text-stone-500 truncate">{{ user.email }}</p>
+            <p class="mt-1 inline-block rounded-full bg-forest-100 px-2 py-0.5 text-[11px] font-semibold text-forest-700">{{ user.get_role_display }}</p>
+        </div>
+        <a href="{% url 'accounts:dashboard' %}" class="block px-4 py-2 text-sm hover:bg-stone-100">Môj účet</a>
+        <a href="{% url 'membership:application_overview' %}" class="block px-4 py-2 text-sm hover:bg-stone-100">Moje členstvo</a>
+        <a href="{% url 'membership:my_card' %}" class="block px-4 py-2 text-sm hover:bg-stone-100">Členská karta</a>
+        {% if user.can_manage_members %}
+        <a href="{% url 'membership:backoffice_member_list' %}" class="block px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50">Sekretariát (back office)</a>
+        {% endif %}
+        <form method="post" action="{% url 'accounts:logout' %}" class="border-t border-stone-200 mt-1">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50">Odhlásiť sa</button>
+        </form>
+    </div>
+</details>
+<script>
+    (function () {
+        var menu = document.getElementById('account-menu');
+        if (!menu) return;
+        document.addEventListener('click', function (e) {
+            if (!menu.contains(e.target)) menu.removeAttribute('open');
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') menu.removeAttribute('open');
+        });
+    })();
+</script>
+{% else %}
+<a href="{% url 'accounts:login' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Prihlásiť sa</a>
+{% endif %}
