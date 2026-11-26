@@ -8,7 +8,9 @@ services:
       - POSTGRES_USER=${DB_USER:-hunting_user}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-secret_password}
     ports:
-      - "5432:5432"
+      # Published on localhost only (the DB must not be reachable from the
+      # network). Set DB_HOST_PORT if 5432 is already used by a local Postgres.
+      - "127.0.0.1:${DB_HOST_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hunting_user} -d ${DB_NAME:-hunting_db}"]
       interval: 5s
@@ -22,9 +24,20 @@ services:
     volumes:
       - ./src:/app
     ports:
-      - "8000:8000"
+      - "${WEB_PORT:-8000}:8000"
     env_file:
-      - .env
+      # Optional: without a .env file the defaults below and in settings.py
+      # are used, so `docker compose up` works straight after `git clone`.
+      - path: .env
+        required: false
+    environment:
+      # Inside the Compose network the database is always reachable as `db:5432`,
+      # whatever a local .env says (it may point to localhost for non-Docker runs).
+      - DB_HOST=db
+      - DB_PORT=5432
+      # Demo setup: load synthetic data on start. The entrypoint itself defaults
+      # to "do not seed" so that other setups never get demo data by accident.
+      - SEED_DEMO_DATA=${SEED_DEMO_DATA:-True}
     depends_on:
       db:
         condition: service_healthy
