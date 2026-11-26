@@ -2,61 +2,70 @@
 
 {% block title %}Membership Fee Calculator — Hunting Association{% endblock %}
 
-{% block content %}
-<div class="card">
-  <h1>Indicative Membership Fee Calculator</h1>
-  <p>
-    Active tariff schedule: <strong>{{ active_rule.name }}</strong>
-    (Version: <strong>{{ active_rule.version }}</strong>)
-  </p>
+{% block back_link %}
+  {% url 'public_site:how_to_join' as join_url %}
+  {% include "common/_back_link.html" with url=join_url label="Back to How to join" %}
+{% endblock %}
 
-  <form method="get" action="{% url 'membership:fee_calculator' %}">
-    {% for field in form %}
-      <div class="form-row">
-        {{ field.label_tag }}
-        {{ field }}
-        {% if field.errors %}{{ field.errors }}{% endif %}
-      </div>
-    {% endfor %}
-    <button type="submit" class="btn">Calculate Fee Breakdown</button>
-  </form>
-</div>
+{% block hero_title %}Membership fee calculator{% endblock %}
+{% block hero_subtitle %}
+  Indicative annual fee. Active tariff schedule: <strong class="text-white">{{ active_rule.name }}</strong>
+  (version <strong class="text-white">{{ active_rule.version }}</strong>).
+{% endblock %}
 
-<div class="card">
-  <h2>Calculated Breakdown</h2>
-  <p class="badge-sample">{{ breakdown.placeholder_label }}</p>
+{% block portal_content %}
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
-  <table>
-    <tbody>
-      <tr>
-        <th>Tariff Rule Version</th>
-        <td>{{ breakdown.rule_version }}</td>
-      </tr>
-      <tr>
-        <th>Membership Category</th>
-        <td>{{ breakdown.member_type }}</td>
-      </tr>
-      <tr>
-        <th>Base Annual Fee</th>
-        <td>{{ breakdown.base_amount }} {{ breakdown.currency }}</td>
-      </tr>
-      <tr>
-        <th>Insurance Add-On</th>
-        <td>+ {{ breakdown.insurance_amount }} {{ breakdown.currency }}</td>
-      </tr>
-      <tr>
-        <th>Reduced-Rate Discount</th>
-        <td>- {{ breakdown.discount_amount }} {{ breakdown.currency }}</td>
-      </tr>
-      <tr>
-        <th>Total Indicative Amount</th>
-        <td><strong>{{ breakdown.total_amount }} {{ breakdown.currency }}</strong></td>
-      </tr>
-    </tbody>
-  </table>
+    <!-- Inputs -->
+    <div class="lg:col-span-2 bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+        <h2 class="text-xl font-bold text-stone-900 mb-4">Your options</h2>
+        <form method="get" action="{% url 'membership:fee_calculator' %}" class="space-y-5">
+            {% for field in form %}
+                {% include "common/_form_field.html" with field=field %}
+            {% endfor %}
+            <button type="submit" class="w-full inline-flex items-center justify-center rounded-md bg-forest-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                Calculate Fee Breakdown
+            </button>
+        </form>
+    </div>
 
-  <p style="margin-top: 1.25rem;">
-    <a class="btn" href="{% url 'membership:apply' %}">Proceed to Membership Application</a>
-  </p>
+    <!-- Result -->
+    <div class="lg:col-span-3 bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+        <h2 class="text-xl font-bold text-stone-900 mb-3">Calculated Breakdown</h2>
+        <p class="mb-5 inline-block rounded-lg border border-amber-500/40 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">{{ breakdown.placeholder_label }}</p>
+
+        <dl class="divide-y divide-stone-200 text-sm">
+            <div class="flex justify-between gap-4 py-3">
+                <dt class="text-stone-600">Tariff Rule Version</dt>
+                <dd class="font-mono text-stone-900">{{ breakdown.rule_version }}</dd>
+            </div>
+            <div class="flex justify-between gap-4 py-3">
+                <dt class="text-stone-600">Membership Category</dt>
+                <dd class="text-stone-900">{{ breakdown.member_type }}</dd>
+            </div>
+            <div class="flex justify-between gap-4 py-3">
+                <dt class="text-stone-600">Base Annual Fee</dt>
+                <dd class="text-stone-900">{{ breakdown.base_amount }} {{ breakdown.currency }}</dd>
+            </div>
+            <div class="flex justify-between gap-4 py-3">
+                <dt class="text-stone-600">Insurance Add-On</dt>
+                <dd class="text-stone-900">+ {{ breakdown.insurance_amount }} {{ breakdown.currency }}</dd>
+            </div>
+            <div class="flex justify-between gap-4 py-3">
+                <dt class="text-stone-600">Reduced-Rate Discount</dt>
+                <dd class="text-stone-900">- {{ breakdown.discount_amount }} {{ breakdown.currency }}</dd>
+            </div>
+            <div class="flex justify-between gap-4 py-4 bg-forest-50 -mx-3 px-3 rounded-lg">
+                <dt class="font-bold text-forest-800">Total Indicative Amount</dt>
+                <dd class="text-lg font-bold text-forest-800">{{ breakdown.total_amount }} {{ breakdown.currency }}</dd>
+            </div>
+        </dl>
+
+        <div class="mt-6">
+            <a href="{% url 'membership:apply' %}" class="inline-flex items-center justify-center rounded-md bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                Proceed to Membership Application
+            </a>
+        </div>
+    </div>
 </div>
 {% endblock %}

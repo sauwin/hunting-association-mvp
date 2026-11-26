@@ -2,38 +2,43 @@
 
 {% block title %}Apply for Membership — Hunting Association{% endblock %}
 
-{% block content %}
-<div class="card">
-  <h1>Membership Application & Frozen Quote Generation</h1>
-  <p>
-    Submitting this form saves your member profile, records your versioned GDPR consent
-    (<strong>{{ consent_version }}</strong>), and generates an immutable fee quote snapshot
-    using tariff version <strong>{{ active_rule.version }}</strong>.
-  </p>
-  <p class="badge-sample">{{ preview_breakdown.placeholder_label }}</p>
+{% block back_link %}
+  {% url 'accounts:dashboard' as dash_url %}
+  {% include "common/_back_link.html" with url=dash_url label="Back to my account" %}
+{% endblock %}
 
-  <form method="post" action="{% url 'membership:apply' %}" novalidate>
-    {% csrf_token %}
+{% block hero_title %}Membership application{% endblock %}
+{% block hero_subtitle %}
+  Submitting this form saves your member profile, records your versioned GDPR consent
+  (<strong class="text-white">{{ consent_version }}</strong>) and generates an immutable fee quote snapshot
+  using tariff version <strong class="text-white">{{ active_rule.version }}</strong>.
+{% endblock %}
 
-    {% if form.non_field_errors %}
-      <div class="errorlist">{{ form.non_field_errors }}</div>
-    {% endif %}
+{% block portal_content %}
+<div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-10 max-w-3xl">
+    <p class="mb-6 inline-block rounded-lg border border-amber-500/40 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">{{ preview_breakdown.placeholder_label }}</p>
 
-    {% for field in form %}
-      <div class="form-row">
-        {{ field.label_tag }}
-        {{ field }}
-        {% if field.help_text %}
-          <div class="help-text">{{ field.help_text }}</div>
+    <form method="post" action="{% url 'membership:apply' %}" novalidate class="space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
         {% endif %}
-        {% if field.errors %}
-          {{ field.errors }}
-        {% endif %}
-      </div>
-    {% endfor %}
 
-    <button type="submit" class="btn">Submit Application & Freeze Fee Quote</button>
-    <a href="{% url 'membership:fee_calculator' %}" class="btn btn-secondary">Preview Calculator</a>
-  </form>
+        {% for field in form %}
+            {% include "common/_form_field.html" with field=field %}
+        {% endfor %}
+
+        <div class="flex flex-wrap gap-3 pt-2">
+            <button type="submit" class="inline-flex items-center justify-center rounded-md bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                Submit Application &amp; Freeze Fee Quote
+            </button>
+            <a href="{% url 'membership:fee_calculator' %}" class="inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-100">
+                Preview Calculator
+            </a>
+        </div>
+    </form>
 </div>
 {% endblock %}

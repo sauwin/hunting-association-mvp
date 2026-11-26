@@ -166,3 +166,13 @@
   - Rejected for now: running the container as a non-root user (conflicts with the `./src:/app` bind mount on Linux hosts) — recorded for the security checklist (Issue 7.5).
   - Checked in the AI session against a real PostgreSQL 16 (without the Docker daemon): `docker compose config` with and without `.env`, the entrypoint on an empty database (migrations, seeds, 15 URLs return the expected codes), a second start creates no duplicates, `SEED_DEMO_DATA` unset skips seeding, and the full suite passes (`Ran 54 tests — OK`).
   - Verified on my machine with Docker Compose: down -v, up --build, entrypoint log shows migrations and seeds, full test suite passes (Ran 54 tests - OK).
+
+## Entry 16 — UI alignment of Student A pages with the public site design
+- **Date:** 2026-11-26
+- **Task / Issue:** Unify the look of the accounts/membership pages with Student B's public site and add missing navigation (login / account menu / logout / back links) (Student A scope).
+- **Prompt Summary:** Asked AI to compare the A and B frontends, list the differences and bring Student A's pages to the same design, plus add account navigation and back buttons.
+- **AI Output:** `common/templates/common/*` (portal base, messages, form field, back link, status badge), `common/forms.py` (`TailwindFormMixin`), account menu partials, rewritten templates of `accounts` and `membership`, `back_url` for the member card view, `profile` for the dashboard view.
+- **Verification & Human Changes:**
+  - Full test suite passes (54 tests); all pages rendered as anonymous / member / secretariat and checked visually on desktop and mobile.
+  - Only two `{% include %}` lines were added to Student B's `public_site/base.html` (agreed with B).
+  - Rejected: translating Student A pages to Slovak in this issue (tests assert English strings) — separate issue.

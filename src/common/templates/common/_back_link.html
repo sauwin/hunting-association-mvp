@@ -1,0 +1,11 @@
+{% comment %}
+  "← Back" link shown at the top of the hero.
+  Usage: {% include "common/_back_link.html" with url=some_url label="Back to dashboard" %}
+{% endcomment %}
+<a href="{{ url }}"
+   class="inline-flex items-center gap-1.5 text-sm font-medium text-stone-300 hover:text-white mb-5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+    </svg>
+    {{ label }}
+</a>

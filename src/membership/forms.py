@@ -4,13 +4,15 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from common.forms import TailwindFormMixin
+
 from .models import FeeQuote, MemberProfile, PaymentRecord
 from .services import DEFAULT_CONSENT_TEXT
 
 User = get_user_model()
 
 
-class FeeCalculatorPreviewForm(forms.Form):
+class FeeCalculatorPreviewForm(TailwindFormMixin, forms.Form):
     member_type = forms.ChoiceField(
         choices=MemberProfile.MemberType.choices,
         initial=MemberProfile.MemberType.HUNTER,
@@ -28,7 +30,7 @@ class FeeCalculatorPreviewForm(forms.Form):
     )
 
 
-class MembershipApplicationForm(forms.ModelForm):
+class MembershipApplicationForm(TailwindFormMixin, forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
         required=True,
@@ -92,7 +94,7 @@ class MembershipApplicationForm(forms.ModelForm):
         return cleaned_data
 
 
-class MemberStatusUpdateForm(forms.Form):
+class MemberStatusUpdateForm(TailwindFormMixin, forms.Form):
     status = forms.ChoiceField(
         choices=MemberProfile.Status.choices,
         label="Membership status",
@@ -127,7 +129,7 @@ class MemberStatusUpdateForm(forms.Form):
         return cleaned_data
 
 
-class ManualPaymentForm(forms.ModelForm):
+class ManualPaymentForm(TailwindFormMixin, forms.ModelForm):
     class Meta:
         model = PaymentRecord
         fields = [
@@ -176,7 +178,7 @@ class ManualPaymentForm(forms.ModelForm):
         return cleaned_data
 
 
-class SecretariatQuickAddMemberForm(forms.Form):
+class SecretariatQuickAddMemberForm(TailwindFormMixin, forms.Form):
     username = forms.CharField(max_length=150, required=True, label="Username")
     email = forms.EmailField(required=True, label="Email address (synthetic)")
     first_name = forms.CharField(max_length=150, required=True, label="First name")

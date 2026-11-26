@@ -72,6 +72,7 @@
                     <a href="{% url 'public_site:volunteer' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Dobrovoľníctvo</a>
                     <a href="{% url 'public_site:how_to_join' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">Ako vstúpiť</a>
                     <a href="{% url 'public_site:faq' %}" class="text-stone-200 hover:text-white font-medium transition text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded px-1">FAQ</a>
+                    {% include "accounts/_nav_account_desktop.html" %}
                     <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md font-semibold text-sm transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                         Stať sa členom
                     </a>
@@ -100,6 +101,7 @@
             <a href="{% url 'public_site:volunteer' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Dobrovoľníctvo</a>
             <a href="{% url 'public_site:how_to_join' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">Ako vstúpiť</a>
             <a href="{% url 'public_site:faq' %}" class="block px-3 py-2 rounded-md text-base font-medium text-stone-200 hover:text-white hover:bg-forest-700">FAQ</a>
+            {% include "accounts/_nav_account_mobile.html" %}
             <a href="{{ membership_register_url|default:'/membership/apply/' }}" class="block w-full text-center mt-3 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-md font-semibold transition">
                 Stať sa členom
             </a>

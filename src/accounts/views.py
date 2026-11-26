@@ -95,4 +95,12 @@ def logout_view(request):
 
 @login_required
 def dashboard_view(request):
-    return render(request, "accounts/dashboard.html", {"user": request.user})
+    # `member_profile` is the reverse one-to-one accessor defined in membership.models.
+    # It raises (an AttributeError subclass) when the user has not applied yet,
+    # so getattr(..., None) gives "no profile" without importing the membership app here.
+    profile = getattr(request.user, "member_profile", None)
+    return render(
+        request,
+        "accounts/dashboard.html",
+        {"user": request.user, "profile": profile},
+    )

@@ -1,11 +1,13 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, UserCreationForm
+
+from common.forms import TailwindFormMixin
 
 User = get_user_model()
 
 
-class RegistrationForm(UserCreationForm):
+class RegistrationForm(TailwindFormMixin, UserCreationForm):
     first_name = forms.CharField(max_length=150, required=True, label="First name")
     last_name = forms.CharField(max_length=150, required=True, label="Last name")
     email = forms.EmailField(required=True, label="Email address")
@@ -31,7 +33,7 @@ class RegistrationForm(UserCreationForm):
         return user
 
 
-class EmailOrUsernameLoginForm(forms.Form):
+class EmailOrUsernameLoginForm(TailwindFormMixin, forms.Form):
     identifier = forms.CharField(
         label="Email or Username",
         max_length=254,
@@ -74,3 +76,11 @@ class EmailOrUsernameLoginForm(forms.Form):
 
     def get_user(self):
         return self.user_cache
+
+
+class StyledPasswordResetForm(TailwindFormMixin, PasswordResetForm):
+    """Django's password reset form, only with the shared Tailwind input styling."""
+
+
+class StyledSetPasswordForm(TailwindFormMixin, SetPasswordForm):
+    """Django's "set new password" form, only with the shared Tailwind input styling."""

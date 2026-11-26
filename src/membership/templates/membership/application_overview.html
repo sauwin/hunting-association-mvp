@@ -2,162 +2,183 @@
 
 {% block title %}My Membership Overview — Hunting Association{% endblock %}
 
-{% block content %}
-<div class="card">
-  <h1>My Membership Status & Personal Data</h1>
+{% block back_link %}
+  {% url 'accounts:dashboard' as dash_url %}
+  {% include "common/_back_link.html" with url=dash_url label="Back to my account" %}
+{% endblock %}
 
-  {% if profile %}
-    <table>
-      <tbody>
-        <tr>
-          <th>Applicant / Member Name</th>
-          <td>{{ request.user.first_name }} {{ request.user.last_name }} ({{ request.user.username }})</td>
-        </tr>
-        <tr>
-          <th>Lifecycle Status</th>
-          <td><strong>{{ profile.get_status_display }}</strong> (<code>{{ profile.status }}</code>)</td>
-        </tr>
-        <tr>
-          <th>Member Number</th>
-          <td>{{ profile.member_number|default:"Pending secretariat approval" }}</td>
-        </tr>
-        <tr>
-          <th>Membership Validity</th>
-          <td>
-            From: {{ profile.valid_from|date:"Y-m-d"|default:"—" }} |
-            Until: {{ profile.valid_until|date:"Y-m-d"|default:"—" }}
-          </td>
-        </tr>
-        <tr>
-          <th>Category</th>
-          <td>{{ profile.get_member_type_display }}</td>
-        </tr>
-        <tr>
-          <th>Contact & Address</th>
-          <td>{{ profile.phone }} — {{ profile.street_address }}, {{ profile.postal_code }} {{ profile.city }}</td>
-        </tr>
-        <tr>
-          <th>Hunting Licence</th>
-          <td>
-            {{ profile.hunting_licence_number|default:"Not provided" }}
-            {% if profile.licence_valid_until %}(valid until {{ profile.licence_valid_until|date:"Y-m-d" }}){% endif %}
-          </td>
-        </tr>
-        <tr>
-          <th>Insurance Valid Until</th>
-          <td>{{ profile.insurance_valid_until|date:"Y-m-d"|default:"Not provided" }}</td>
-        </tr>
-      </tbody>
-    </table>
+{% block hero_title %}My membership{% endblock %}
+{% block hero_subtitle %}Status, frozen fee quotes, recorded consents and the personal data we store about you.{% endblock %}
 
-    <p style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
-      <a href="{% url 'membership:my_card' %}" class="btn">View / Print Digital Member Card</a>
-      <a href="{% url 'membership:apply' %}" class="btn">Update Application / Generate New Quote</a>
-      <a href="{% url 'membership:export_my_data' %}" class="btn btn-secondary">Download My Data (JSON)</a>
-    </p>
-  {% else %}
-    <p>You have not submitted a membership application yet.</p>
-    <p>
-      <a href="{% url 'membership:apply' %}" class="btn">Submit Membership Application</a>
-      <a href="{% url 'membership:export_my_data' %}" class="btn btn-secondary">Download My Data (JSON)</a>
-    </p>
-  {% endif %}
+{% block hero_actions %}
+{% if profile %}
+<a href="{% url 'membership:my_card' %}" class="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Digital member card</a>
+{% endif %}
+<a href="{% url 'membership:export_my_data' %}" class="inline-flex items-center justify-center rounded-md border border-forest-600 bg-forest-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-forest-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">Download my data (JSON)</a>
+{% endblock %}
+
+{% block portal_content %}
+
+<!-- Profile -->
+<div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8 mb-8">
+    <h2 class="text-xl font-bold text-stone-900 mb-5">Membership status &amp; personal data</h2>
+
+    {% if profile %}
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Applicant / Member Name</dt>
+            <dd class="mt-1 text-stone-900">{{ request.user.first_name }} {{ request.user.last_name }} ({{ request.user.username }})</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Lifecycle Status</dt>
+            <dd class="mt-1">{% include "common/_status_badge.html" with status=profile.status label=profile.get_status_display %}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Member Number</dt>
+            <dd class="mt-1 font-mono text-stone-900">{{ profile.member_number|default:"Pending secretariat approval" }}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Membership Validity</dt>
+            <dd class="mt-1 text-stone-900">From: {{ profile.valid_from|date:"Y-m-d"|default:"—" }} | Until: {{ profile.valid_until|date:"Y-m-d"|default:"—" }}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Category</dt>
+            <dd class="mt-1 text-stone-900">{{ profile.get_member_type_display }}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Contact &amp; Address</dt>
+            <dd class="mt-1 text-stone-900">{{ profile.phone }} — {{ profile.street_address }}, {{ profile.postal_code }} {{ profile.city }}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Hunting Licence</dt>
+            <dd class="mt-1 text-stone-900">
+                {{ profile.hunting_licence_number|default:"Not provided" }}
+                {% if profile.licence_valid_until %}(valid until {{ profile.licence_valid_until|date:"Y-m-d" }}){% endif %}
+            </dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500">Insurance Valid Until</dt>
+            <dd class="mt-1 text-stone-900">{{ profile.insurance_valid_until|date:"Y-m-d"|default:"Not provided" }}</dd>
+        </div>
+    </dl>
+
+    <div class="mt-6 pt-5 border-t border-stone-200 flex flex-wrap gap-3">
+        <a href="{% url 'membership:my_card' %}" class="inline-flex items-center justify-center rounded-md bg-forest-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-600">View / Print Digital Member Card</a>
+        <a href="{% url 'membership:apply' %}" class="inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100">Update Application / Generate New Quote</a>
+    </div>
+    {% else %}
+    <p class="text-stone-600">You have not submitted a membership application yet.</p>
+    <div class="mt-5 flex flex-wrap gap-3">
+        <a href="{% url 'membership:apply' %}" class="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700">Submit Membership Application</a>
+        <a href="{% url 'membership:fee_calculator' %}" class="inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100">Fee calculator</a>
+    </div>
+    {% endif %}
 </div>
 
-<div class="card">
-  <h2>Frozen Fee Quotes (Immutable Snapshots)</h2>
-  {% if quotes %}
-    <table>
-      <thead>
-        <tr>
-          <th>Quote #</th>
-          <th>Rule Version</th>
-          <th>Category</th>
-          <th>Base</th>
-          <th>Insurance</th>
-          <th>Discount</th>
-          <th>Total</th>
-          <th>Notice</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for q in quotes %}
-          <tr>
-            <td>#{{ q.id }}</td>
-            <td><code>{{ q.rule_version_snapshot }}</code></td>
-            <td>{{ q.member_type_snapshot }}</td>
-            <td>{{ q.base_amount }} {{ q.currency }}</td>
-            <td>{{ q.insurance_amount }} {{ q.currency }}</td>
-            <td>-{{ q.discount_amount }} {{ q.currency }}</td>
-            <td><strong>{{ q.total_amount }} {{ q.currency }}</strong></td>
-            <td><small>{{ q.placeholder_label }}</small></td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No fee quotes generated yet.</p>
-  {% endif %}
+<!-- Frozen quotes -->
+<div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8 mb-8">
+    <h2 class="text-xl font-bold text-stone-900 mb-1">Frozen Fee Quotes (Immutable Snapshots)</h2>
+    <p class="text-sm text-stone-500 mb-4">A later change of the fee rules never rewrites these amounts.</p>
+    {% if quotes %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-stone-50 text-left text-xs font-semibold uppercase tracking-wider text-stone-600">
+                <tr>
+                    <th class="px-3 py-2.5">Quote #</th>
+                    <th class="px-3 py-2.5">Rule Version</th>
+                    <th class="px-3 py-2.5">Category</th>
+                    <th class="px-3 py-2.5">Base</th>
+                    <th class="px-3 py-2.5">Insurance</th>
+                    <th class="px-3 py-2.5">Discount</th>
+                    <th class="px-3 py-2.5">Total</th>
+                    <th class="px-3 py-2.5">Notice</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200">
+                {% for q in quotes %}
+                <tr>
+                    <td class="px-3 py-2.5 align-top">#{{ q.id }}</td>
+                    <td class="px-3 py-2.5 align-top font-mono text-xs">{{ q.rule_version_snapshot }}</td>
+                    <td class="px-3 py-2.5 align-top">{{ q.member_type_snapshot }}</td>
+                    <td class="px-3 py-2.5 align-top">{{ q.base_amount }} {{ q.currency }}</td>
+                    <td class="px-3 py-2.5 align-top">{{ q.insurance_amount }} {{ q.currency }}</td>
+                    <td class="px-3 py-2.5 align-top">-{{ q.discount_amount }} {{ q.currency }}</td>
+                    <td class="px-3 py-2.5 align-top font-semibold">{{ q.total_amount }} {{ q.currency }}</td>
+                    <td class="px-3 py-2.5 align-top text-xs text-stone-500">{{ q.placeholder_label }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-stone-600">No fee quotes generated yet.</p>
+    {% endif %}
 </div>
 
-<div class="card">
-  <h2>Membership Status Lifecycle History</h2>
-  {% if status_history %}
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Previous Status</th>
-          <th>New Status</th>
-          <th>Note</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for entry in status_history %}
-          <tr>
-            <td>{{ entry.changed_at|date:"Y-m-d H:i" }}</td>
-            <td><code>{{ entry.previous_status|default:"—" }}</code></td>
-            <td><strong>{{ entry.new_status }}</strong></td>
-            <td>{{ entry.note }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No status transitions recorded yet.</p>
-  {% endif %}
+<!-- Status history -->
+<div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8 mb-8">
+    <h2 class="text-xl font-bold text-stone-900 mb-4">Membership Status Lifecycle History</h2>
+    {% if status_history %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-stone-50 text-left text-xs font-semibold uppercase tracking-wider text-stone-600">
+                <tr>
+                    <th class="px-3 py-2.5">Date</th>
+                    <th class="px-3 py-2.5">Previous Status</th>
+                    <th class="px-3 py-2.5">New Status</th>
+                    <th class="px-3 py-2.5">Note</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200">
+                {% for entry in status_history %}
+                <tr>
+                    <td class="px-3 py-2.5 align-top whitespace-nowrap">{{ entry.changed_at|date:"Y-m-d H:i" }}</td>
+                    <td class="px-3 py-2.5 align-top font-mono text-xs">{{ entry.previous_status|default:"—" }}</td>
+                    <td class="px-3 py-2.5 align-top font-semibold">{{ entry.new_status }}</td>
+                    <td class="px-3 py-2.5 align-top">{{ entry.note }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-stone-600">No status transitions recorded yet.</p>
+    {% endif %}
 </div>
 
-<div class="card">
-  <h2>Recorded Consents & Data Deletion Procedure</h2>
-  {% if consents %}
-    <table>
-      <thead>
-        <tr>
-          <th>Version</th>
-          <th>Purpose</th>
-          <th>Accepted At</th>
-          <th>Snapshot Text</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in consents %}
-          <tr>
-            <td><code>{{ c.consent_version }}</code></td>
-            <td>{{ c.get_purpose_display }}</td>
-            <td>{{ c.accepted_at|date:"Y-m-d H:i" }}</td>
-            <td><small>{{ c.consent_text_snapshot }}</small></td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No consent records found.</p>
-  {% endif %}
+<!-- Consents + deletion procedure -->
+<div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+    <h2 class="text-xl font-bold text-stone-900 mb-4">Recorded Consents &amp; Data Deletion Procedure</h2>
+    {% if consents %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-stone-50 text-left text-xs font-semibold uppercase tracking-wider text-stone-600">
+                <tr>
+                    <th class="px-3 py-2.5">Version</th>
+                    <th class="px-3 py-2.5">Purpose</th>
+                    <th class="px-3 py-2.5">Accepted At</th>
+                    <th class="px-3 py-2.5">Snapshot Text</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200">
+                {% for c in consents %}
+                <tr>
+                    <td class="px-3 py-2.5 align-top font-mono text-xs">{{ c.consent_version }}</td>
+                    <td class="px-3 py-2.5 align-top">{{ c.get_purpose_display }}</td>
+                    <td class="px-3 py-2.5 align-top whitespace-nowrap">{{ c.accepted_at|date:"Y-m-d H:i" }}</td>
+                    <td class="px-3 py-2.5 align-top text-xs text-stone-600">{{ c.consent_text_snapshot }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-stone-600">No consent records found.</p>
+    {% endif %}
 
-  <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-    <h3 style="margin-top: 0; font-size: 1rem;">How Personal Data Deletion Requests Are Handled (MVP Documentation)</h3>
-    <p class="help-text">{{ deletion_procedure }}</p>
-  </div>
+    <div class="mt-6 pt-5 border-t border-stone-200">
+        <h3 class="text-base font-semibold text-stone-900">How Personal Data Deletion Requests Are Handled (MVP Documentation)</h3>
+        <p class="mt-2 text-sm leading-relaxed text-stone-600">{{ deletion_procedure }}</p>
+    </div>
 </div>
 {% endblock %}

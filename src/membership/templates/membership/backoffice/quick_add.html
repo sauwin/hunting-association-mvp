@@ -2,31 +2,45 @@
 
 {% block title %}Quick-Add Member — Secretariat Back Office{% endblock %}
 
-{% block content %}
-<div class="card">
-  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-    <h1 style="margin: 0;">Quick-Add Synthetic Member</h1>
-    <a href="{% url 'membership:backoffice_member_list' %}" class="btn btn-secondary">Back to Directory</a>
-  </div>
-  <p class="help-text">
-    Creates a synthetic member account, profile, initial lifecycle history entry, and frozen sample fee quote in one step.
-  </p>
+{% block hero_eyebrow %}Secretariat back office{% endblock %}
 
-  <form method="post" action="{% url 'membership:backoffice_quick_add' %}" novalidate>
-    {% csrf_token %}
-    {% if form.non_field_errors %}<div class="errorlist">{{ form.non_field_errors }}</div>{% endif %}
+{% block back_link %}
+  {% url 'membership:backoffice_member_list' as list_url %}
+  {% include "common/_back_link.html" with url=list_url label="Back to Directory" %}
+{% endblock %}
 
-    {% for field in form %}
-      <div class="form-row">
-        {{ field.label_tag }}
-        {{ field }}
-        {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
-        {% if field.errors %}{{ field.errors }}{% endif %}
-      </div>
-    {% endfor %}
+{% block hero_title %}Quick-add synthetic member{% endblock %}
+{% block hero_subtitle %}
+  Creates a synthetic member account, profile, initial lifecycle history entry and frozen sample fee quote in one step.
+{% endblock %}
 
-    <button type="submit" class="btn">Create Member & Generate Quote</button>
-    <a href="{% url 'membership:backoffice_member_list' %}" class="btn btn-secondary">Cancel</a>
-  </form>
+{% block portal_content %}
+<div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-10 max-w-4xl">
+    <form method="post" action="{% url 'membership:backoffice_quick_add' %}" novalidate class="space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+            {% for field in form %}
+                {% if field.widget_type == "checkbox" %}
+                <div class="sm:col-span-2">{% include "common/_form_field.html" with field=field %}</div>
+                {% else %}
+                {% include "common/_form_field.html" with field=field %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="flex flex-wrap gap-3 pt-2">
+            <button type="submit" class="inline-flex items-center justify-center rounded-md bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+                Create Member &amp; Generate Quote
+            </button>
+            <a href="{% url 'membership:backoffice_member_list' %}" class="inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-100">Cancel</a>
+        </div>
+    </form>
 </div>
 {% endblock %}
