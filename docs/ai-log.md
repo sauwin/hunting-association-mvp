@@ -154,3 +154,15 @@
 - **Verification & Human Changes:**
   - Verified `docker compose exec web python manage.py send_renewal_reminders --days 60 --dry-run` and regular dispatch via console email backend.
   - Ran `docker compose exec web python manage.py test` across all modules (`accounts`, `membership`, `public_site`) and verified all tests pass, including all 3 synthetic contract examples from `docs/contracts.md`, RBAC 401/403 enforcement, and renewal command filtering.
+
+## Entry 15 — Work Block 7.1: Reproducible Clean Start with Docker Compose & README Quick Start
+- **Date:** 2026-11-26
+- **Task / Issue:** Work Block 7 (handover), sub-task 7.1 — make `docker compose up --build` work from a fresh clone (automatic migrations and demo data, optional `.env`), write the README, clean up the repository (Student A scope).
+- **Prompt Summary:** Asked AI to review the repository against Assignment A, split Work Block 7 into issues, and implement the first one: entrypoint script, Dockerfile/Compose changes, `.dockerignore`/`.gitattributes`/`.gitignore`, README with quick start and troubleshooting.
+- **AI Output:** `docker/entrypoint.sh`, updated `Dockerfile`, `docker-compose.yml`, `.env.example`, `.gitignore`, new `.dockerignore` and `.gitattributes`, `README.md`, migration `accounts/0002_alter_user_role.py` and `MigrationDriftTests` in `src/common/tests.py`.
+- **Verification & Human Changes:**
+  - AI found that `makemigrations --check` reported an unapplied model change in `accounts` (`User.role` label/help_text; `sqlmigrate` shows a no-op). Accepted: generated `0002` and a test; confirmed the test fails when the migration file is removed and passes with it.
+  - AI also found the stray file `witch main` (saved output of `git branch -a`) in the repository root; removed it.
+  - Rejected for now: running the container as a non-root user (conflicts with the `./src:/app` bind mount on Linux hosts) — recorded for the security checklist (Issue 7.5).
+  - Checked in the AI session against a real PostgreSQL 16 (without the Docker daemon): `docker compose config` with and without `.env`, the entrypoint on an empty database (migrations, seeds, 15 URLs return the expected codes), a second start creates no duplicates, `SEED_DEMO_DATA` unset skips seeding, and the full suite passes (`Ran 54 tests — OK`).
+  - Verified on my machine with Docker Compose: down -v, up --build, entrypoint log shows migrations and seeds, full test suite passes (Ran 54 tests - OK).
