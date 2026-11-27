@@ -127,6 +127,11 @@ docker compose exec web python manage.py test
 | [`docs/test-report.md`](docs/test-report.md) | Automated test results (54 tests, coverage) and traceability to the acceptance criteria |
 | [`docs/manual-test-checklist.md`](docs/manual-test-checklist.md) | Step-by-step manual checks: registration, application, quotes, card, GDPR export, back office, payments, CSV, eligibility, reminders |
 | [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) | Third-party libraries, front-end resources and container images with their licences |
+| [`docs/user-guide.md`](docs/user-guide.md) | Short user guide: members (register, apply, card, data export) and secretariat/admin staff (approvals, payments, CSV, fee rules, reminders) |
+| [`docs/deployment-and-backup.md`](docs/deployment-and-backup.md) | Running the stack, environment variables, production hardening list, PostgreSQL backup and restore with `pg_dump` / `pg_restore` |
+| [`docs/owasp-checklist.md`](docs/owasp-checklist.md) | OWASP Top 10:2025 review of the MVP with status, evidence and open actions |
+| [`docs/gdpr-checklist.md`](docs/gdpr-checklist.md) | GDPR checklist: personal-data inventory, consent, data subject rights, manual deletion procedure, open decisions (not legal advice) |
+| [`docs/demo-and-defence.md`](docs/demo-and-defence.md) | 5-minute demo script, code walkthrough map, live-change rehearsal and defence checklist |
 | [`docs/membership-model.md`](docs/membership-model.md) | Membership data model and privacy notes |
 | [`docs/content-model.md`](docs/content-model.md) | Public-site content model |
 | [`docs/wireframes.md`](docs/wireframes.md) | Public-site user flow and wireframes |
