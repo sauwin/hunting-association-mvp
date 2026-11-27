@@ -123,6 +123,10 @@ docker compose exec web python manage.py test
 | Document | Content |
 |----------|---------|
 | [`docs/contracts.md`](docs/contracts.md) | Contracts between the membership module and the public site (eligibility, notifications, registration link) |
+| [`docs/api.md`](docs/api.md) | API reference: endpoints, query parameters, status codes (`200`, `400`, `401`, `403`, `404`) and sample JSON/HTML flows, including `/membership/api/eligibility/` |
+| [`docs/test-report.md`](docs/test-report.md) | Automated test results (54 tests, coverage) and traceability to the acceptance criteria |
+| [`docs/manual-test-checklist.md`](docs/manual-test-checklist.md) | Step-by-step manual checks: registration, application, quotes, card, GDPR export, back office, payments, CSV, eligibility, reminders |
+| [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) | Third-party libraries, front-end resources and container images with their licences |
 | [`docs/membership-model.md`](docs/membership-model.md) | Membership data model and privacy notes |
 | [`docs/content-model.md`](docs/content-model.md) | Public-site content model |
 | [`docs/wireframes.md`](docs/wireframes.md) | Public-site user flow and wireframes |

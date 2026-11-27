@@ -176,3 +176,15 @@
   - Full test suite passes (54 tests); all pages rendered as anonymous / member / secretariat and checked visually on desktop and mobile.
   - Only two `{% include %}` lines were added to Student B's `public_site/base.html` (agreed with B).
   - Rejected: translating Student A pages to Slovak in this issue (tests assert English strings) — separate issue.
+
+## Entry 17 — Work Block 7: API docs, test report, manual checklist and third-party licences
+- **Date:** 2026-11-27
+- **Task / Issue:** #34 — handover documentation of the membership module: API endpoints and contracts, automated test results with a manual verification checklist, third-party library licences (Student A scope).
+- **Prompt Summary:** Asked AI to document the endpoints (parameters, status codes, sample JSON/HTML flows incl. the eligibility API), summarise the automated suite, write a step-by-step manual checklist, list all dependencies from `requirements.txt` with their licences and link everything in the README.
+- **AI Output:** `docs/api.md`, `docs/test-report.md`, `docs/manual-test-checklist.md`, `THIRD_PARTY_LICENSES.md`, new rows in the README documentation table.
+- **Verification & Human Changes:**
+  - All response examples in `docs/api.md` were captured from the application with the Django test client (anonymous, member, secretariat, wrong method, invalid date), and the expected values of the manual checklist were replayed the same way; nothing was written from memory.
+  - Test suite: 54 tests OK (Docker/PostgreSQL run of 2026-11-26 and a re-run on SQLite in the AI session); coverage of 94 % measured with coverage.py, which is not a project dependency.
+  - Licences were read from the package metadata in a clean virtual environment built from `requirements.txt`; versions are those resolved on 2026-11-27.
+  - AI findings: `docs/contracts.md` names the field `hunting_licence_valid_until` but the model uses `licence_valid_until`; `python-dotenv`, `pytest` and `pytest-django` are declared but never used; the demo articles hotlink Unsplash photos (Student B scope, to confirm with B).
+  - TODO before committing: replace this line with what I checked myself (Docker test run, which checklist sections I walked through, date and result).
