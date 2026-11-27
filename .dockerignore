@@ -13,3 +13,5 @@ venv
 .venv
 docs
 README.md
+backups
+*.dump
