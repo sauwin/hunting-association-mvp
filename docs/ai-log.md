@@ -155,7 +155,7 @@
   - Verified `docker compose exec web python manage.py send_renewal_reminders --days 60 --dry-run` and regular dispatch via console email backend.
   - Ran `docker compose exec web python manage.py test` across all modules (`accounts`, `membership`, `public_site`) and verified all tests pass, including all 3 synthetic contract examples from `docs/contracts.md`, RBAC 401/403 enforcement, and renewal command filtering.
 
-## Entry 15 — Work Block 7.1: Reproducible Clean Start with Docker Compose & README Quick Start
+## Entry 15 — Reproducible Clean Start with Docker Compose & README Quick Start
 - **Date:** 2026-11-26
 - **Task / Issue:** Work Block 7 (handover), sub-task 7.1 — make `docker compose up --build` work from a fresh clone (automatic migrations and demo data, optional `.env`), write the README, clean up the repository (Student A scope).
 - **Prompt Summary:** Asked AI to review the repository against Assignment A, split Work Block 7 into issues, and implement the first one: entrypoint script, Dockerfile/Compose changes, `.dockerignore`/`.gitattributes`/`.gitignore`, README with quick start and troubleshooting.
